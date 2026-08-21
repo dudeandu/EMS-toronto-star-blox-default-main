@@ -1,0 +1,167 @@
+.SA_clearfix:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+}
+
+.SA_clearfix {
+    display: block;
+}
+
+.SA_related-container {
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    // color: $titlecolour2;
+    // font-family: $captionfont;
+    text-align: center;
+    padding: 0 21px;
+    // max-width: 1024px;
+    margin: 0 auto;
+    padding-bottom: 15px !important;
+    justify-content: space-between;
+
+    @include tablet {
+        //padding: 0 8px;
+        padding: 0 55px;
+    }
+
+    & a {
+        color: $headerText;
+        text-decoration: none;
+    }
+
+    @include e('heading') {
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 0.875rem;
+        line-height: 1em;
+        margin: 0 0 3.5rem;
+        font-weight: 400;
+        text-transform: uppercase;
+
+        width: 100%;
+        text-align: center;
+        padding-top: 42px;
+        color: $bodyText;
+
+
+        @include tablet {
+            font-size: 0.9375rem;
+
+        }
+
+        @include desktop {
+            font-size: 1rem;
+
+        }
+
+    }
+
+    @include e('part') {
+        padding: 0 0 1.5rem;
+        vertical-align: top;
+
+        @include tablet {
+            // margin-right: 1rem;
+            // width: calc(33.333% - 2rem / 3);
+            // float: left;
+            // max-width: 280px;
+        }
+
+        @include desktop {
+            // margin-right: 1.5rem;
+            // width: calc(33.3333% - 3rem / 3);
+        }
+
+        @include m('last') {
+            margin-right: 0;
+        }
+
+        &:after {
+            visibility: hidden;
+            display: block;
+            font-size: 0;
+            content: " ";
+            clear: both;
+            height: 0;
+        }
+
+        &:hover {
+            // color: #0062a1;
+
+            img {
+                filter: brightness(105%);
+            }
+        }
+
+
+        @include e('image') {
+            width: 100%;
+            margin: 0 0 0 1rem;
+            float: right;
+
+            @include tablet {
+                width: 100%;
+                margin: 0;
+                display: block;
+                padding-bottom: 0.5rem;
+            }
+
+            @include desktop {
+                width: 100%;
+                margin: 0 0 0 1rem;
+                float: right;
+                padding-bottom: 5px;
+            }
+
+        }
+
+        @include e('textbox') {
+            // margin-left: calc(33.333% - 2rem / 3 + 1rem);
+
+            @include tablet {
+                margin-left: 0;
+            }
+
+            @include e('title') {
+                font-size: 1rem;
+                line-height: 1.25rem;
+                font-weight: 500;
+                padding-bottom: 0.25rem;
+                text-align: left;
+                margin: 0;
+
+                @include tablet {
+                    font-size: 1.1875rem;
+                }
+
+                @include desktop {
+                    font-size: 1rem;
+                    line-height: 1.5rem
+                }
+            }
+
+            @include e('description') {
+                margin: 0;
+                font-size: 0.875rem;
+                line-height: 1rem;
+                text-align: left;
+                margin: 0;
+
+                @include tablet {
+                    font-size: 0.9375rem;
+                    line-height: 1.25rem;
+                }
+
+                @include desktop {
+                    font-size: 1rem;
+                }
+            }
+
+        }
+    }
+
+
+
+}

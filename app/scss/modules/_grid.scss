@@ -1,0 +1,258 @@
+@use "sass:math";
+@use '../mixins' as *;
+@use 'variables' as *;
+
+.SA_flex-grid {
+    max-width: 1490px;
+    margin: 0 auto;
+    // padding: 0 #{($margins) + "px"};
+    padding: 0 31px;
+    display: block;
+    justify-content: space-around;
+    margin-bottom: #{($margins) + "px"};
+    // gap:  #{($margins) + "px"};
+
+    @include tablet {
+        margin-bottom: #{($margins) + "px"};
+        // display: -ms-flexbox;
+        display: flex;
+    }
+
+    @include desktop {
+
+        // display: -ms-flexbox;
+        display: flex;
+    }
+}
+
+
+.SA_hide-mobile {
+    @include mobile-only {
+        display: none !important;
+    }
+}
+
+.SA_hide-tablet {
+    @include tablet-only {
+        display: none !important;
+
+    }
+}
+
+.SA_hide-desktop {
+    @include desktop-only {
+        display: none !important;
+    }
+
+    @include xl-desktop-only {
+        display: none !important;
+    }
+}
+
+// class to add to flex items to prevent them from stacking on mobile
+.SA_flex-grid--no-stack {
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.SA_header-section {
+    max-width: 960px;
+    margin: 0 auto 50px auto;
+    position: relative;
+}
+
+.SA_header-section-text {
+    max-width: 690px;
+    margin: 0 30px;
+    @include tablet {
+        margin: 0 auto;
+    }
+}
+
+.SA_text-grid {
+    max-width: 960px;
+    margin: 0 30px;
+    position: relative;
+
+    @include tablet {
+        margin: 0 auto;
+    }
+}
+
+
+.SA_text-wrap {
+    max-width: 690px;
+    // margin: 0 calc((100% * 1/14) + #{(math.div($margins, 2)) + "px"}) #{(math.div($margins, 2)) + "px"} calc((100% * 1/14) + #{(math.div($margins, 2)) + "px"});
+    display: block;
+    margin: 0 auto;
+
+    @include tablet {}
+
+    @include desktop {}
+}
+
+.SA_centered-text-wrap {
+    margin: 0 calc((100% * 1/14) + #{(math.div($margins, 2)) + "px"}) #{(math.div($margins, 2)) + "px"} calc((100% * 1/14) + #{(math.div($margins, 2)) + "px"});
+    display: block;
+
+    @include tablet {
+        margin: 0 calc((100% * 2/14) + #{(math.div($margins, 2)) + "px"}) #{(math.div($margins, 2)) + "px"} calc((100% * 2/14) + #{(math.div($margins, 2)) + "px"});
+
+    }
+
+    @include desktop {
+        margin: 0 calc((100% * 3/14) + #{(math.div($margins, 2)) + "px"}) #{(math.div($margins, 2)) + "px"} calc((100% * 3/14) + #{(math.div($margins, 2)) + "px"});
+        display: block;
+    }
+}
+
+.SA_col {
+    height: auto;
+    position: relative;
+
+    &.SA_spacer {
+        background: none !important;
+    }
+
+    &.SA_col--1 {
+        width: calc((100% * 1/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 1/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--2 {
+        width: calc((100% * 2/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 2/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--3 {
+        width: calc((100% * 3/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 3/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--4 {
+        width: calc((100% * 4/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 4/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--5 {
+        width: calc((100% * 5/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 5/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--6 {
+        width: calc((100% * 6/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 6/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--7 {
+        width: calc((100% * 7/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 7/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--8 {
+        width: calc((100% * 8/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 8/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--9 {
+        width: calc((100% * 9/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 9/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--10 {
+        width: calc((100% * 10/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 10/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--11 {
+        width: calc((100% * 11/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 11/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--12 {
+        width: calc((100% * 12/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 12/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--13 {
+        width: calc((100% * 13/14) - #{($margins) + "px"});
+        flex-basis: calc((100% * 13/14) - #{($margins) + "px"});
+    }
+
+    &.SA_col--14 {
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+}
+
+// .SA_col:first-child,
+// .SA_col:last-child {
+
+//     &.SA_col--1 {
+//         width: calc((100% * 1/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--2 {
+//         width: calc((100% * 2/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--3 {
+//         width: calc((100% * 3/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--4 {
+//         width: calc((100% * 4/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--5 {
+//         width: calc((100% * 5/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--6 {
+//         width: calc((100% * 6/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--7 {
+//         width: calc((100% * 7/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--8 {
+//         width: calc((100% * 8/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--9 {
+//         width: calc((100% * 9/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--10 {
+//         width: calc((100% * 10/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--11 {
+//         width: calc((100% * 11/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--12 {
+//         width: calc((100% * 12/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--13 {
+//         width: calc((100% * 13/14) - #{(math.div($margins, 2)) + "px"});
+//     }
+
+//     &.SA_col--14 {
+//         width: 100%;
+//     }
+
+// }
+
+/*! purgecss start ignore */
+@include mobile {
+    :not(.SA_flex-grid--no-stack)>.SA_col {
+        width: 100% !important;
+        margin-bottom: #{($margins) + "px"};
+    }
+}
+
+/*! purgecss end ignore */

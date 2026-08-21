@@ -1,0 +1,26 @@
+[%-
+macro $$macroName$$; 
+seaPath = "$$seaPath$$";
+compPath = util_comFile('torstar_special_articles','1.js','path':'') | replace("scripts/1.js","");
+compImgPath = "https://projects-images.thestar.com/"+seaPath;
+compJSPath = compPath+"scripts/"+seaPath;
+compCSSPath+"styles/"+seaPath;
+
+cms.page.add_css(util_comFile('torstar_special_articles','normalize.css','fPath':'styles/'+seaPath)); 
+cms.page.add_css(util_comFile('torstar_special_articles','main.css','fPath':'styles/'+seaPath)); 
+cms.page.add_script(util_comFile('torstar_special_articles','script.min.js','fPath':'scripts/'+seaPath), 'defer':true); 
+%]
+
+<script>const compImgPath = "[% compImgPath %]"</script>
+
+@@include('./body.html', {
+"projectUrl": "URL",
+"projectName": "Project name",
+"assetPath": "",
+"seoTitle": "Title",
+"seoDescription": "Description",
+"seoTags":"word count: >1200 words"
+})
+
+[% end;
+-%]

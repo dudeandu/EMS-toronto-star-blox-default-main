@@ -1,0 +1,156 @@
+//sass --watch scss/app.scss:css/main.css
+$mobileSwitch: 880px;
+
+.SA_ieMenuParent {
+    display: none;
+    pointer-events: all;
+    position: fixed;
+    z-index: 10;
+    top: 50px;
+    list-style: none;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    background: #fff;
+    top: 33px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+
+    img {
+        margin-right: 5px;
+    }
+
+    li {
+        margin-right: 22px;
+        display: inline-block;
+    }
+
+    a {
+        line-height: 1.6;
+        color: #484848;
+        text-decoration: none;
+    }
+}
+
+.SA_starLogo {
+    top: 7px;
+    left: 7px;
+    height: 33px;
+    z-index: 4;
+
+    @media only screen and (min-width: $mobileSwitch) {
+        top: 17px;
+        left: 17px;
+        left: 6px;
+    }
+
+}
+
+.SA_nav-container {
+    position: absolute;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translateX(-50%);
+    z-index: 11;
+    display: none;
+}
+
+.SA_top-bar {
+    width: calc(100% - 14px);
+    background: #fff;
+
+    // border-bottom: 1px solid #eaeaea;
+
+    height: 47px;
+    position: fixed;
+    z-index: 100;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 7px;
+}
+
+.SA_social-icon {
+    width: 33.25px !important;
+    height: 37px !important;
+    float: left;
+    margin-top: -2px;
+    margin-right: 7px;
+
+
+    @media only screen and (min-width: $mobileSwitch) {
+        width: auto !important;
+        height: 37px !important;
+        margin-top: -2px;
+    }
+}
+
+.SA_subscribeButton {
+    font-family: Merriweather Sans, Helvetica, Roboto, Arial, sans-serif;
+    font-weight: 400;
+    line-height: normal;
+    top: 0;
+    display: inline-block;
+    padding: 6px 20px 0;
+    height: 28px;
+    height: 26px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 0;
+    background-color: #0065a4;
+    background-color: #e2e2e2;
+    background-color: transparent;
+    border: 1px solid #e8e8e8;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.3s;
+    // margin: 0 41px 0 0;
+    background-color: #0062a1;
+    border: 0;
+
+    @media only screen and (min-width: $mobileSwitch) {
+        margin: 0;
+    }
+
+    // @include tablet {
+    //     padding: 4px 40px 0;
+    //     // right: 0;
+    //     // margin: 8px 8px 0 0;
+    //     // padding: 4px 40px 0;
+    //     // height: 38px;
+    //     // font-size: 14px;
+    //     // color: #fff;
+    //     // border-radius: 5px;
+    //     // border: 0;
+    //     // background-color: #0062a1;
+
+    //     &:hover {
+    //         background-color: #fff
+    //     }
+    // }
+
+    &:hover {
+        background-color: #1174b9;
+    }
+}
+
+.SA_subscribe-btn-title {
+    line-height: 22px;
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    // color: #101010;
+
+    // @include tablet {
+    //     font-weight: 700;
+    //     // font-size: 14px;
+    //     // line-height: 35px;
+    // }
+}

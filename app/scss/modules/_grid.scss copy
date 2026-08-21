@@ -1,0 +1,279 @@
+.SA_flex-grid {
+    max-width: 1490px;
+    margin: 0 auto;
+    padding: 0 #{($margins) +"px"};
+    display: block;
+    justify-content: space-around;
+    margin-bottom: #{($margins) +"px"};
+    // gap:  #{($margins) +"px"};
+
+    @include tablet {
+        margin-bottom: #{($margins) +"px"};
+        // display: -ms-flexbox;
+        display: flex;
+    }
+
+    @include desktop {
+
+        // display: -ms-flexbox;
+        display: flex;
+    }
+}
+
+
+.SA_hide-mobile {
+    @include mobile-only {
+        display: none !important;
+    }
+}
+
+.SA_hide-tablet {
+    @include tablet-only {
+        display: none !important;
+
+    }
+}
+
+.SA_hide-desktop {
+    @include desktop-only {
+        display: none !important;
+    }
+
+    @include xl-desktop-only {
+        display: none !important;
+    }
+}
+
+// class to add to flex items to prevent them from stacking on mobile
+.SA_flex-grid--no-stack {
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.SA_text-grid {
+    max-width: 1490px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    padding: 0 #{($margins) +"px"};
+}
+
+// @include xl-desktop {
+
+//     .SA_flex-grid,
+//     .SA_text-grid {
+//         max-width: 1500px;
+//     }
+// }
+
+// .SA_text-wrap {
+//     // margin: 0 calc((100% * 1/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 1/14) + #{($margins/2) +"px"});
+//     margin: 0 1.4rem;
+//     max-width: calc(100% - 2.8rem);
+//     display: block;
+
+//     @include tablet {
+//         margin: 0 calc((100% * 3/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 3/14) + #{($margins/2) +"px"});
+
+//     }
+
+//     @include desktop {
+//         margin: 0 calc((100% * 3/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 3/14) + #{($margins/2) +"px"});
+//         display: block;
+//     }
+
+//     @include xl-desktop {
+//         margin: 0 calc((100% * 4/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 4/14) + #{($margins/2) +"px"});
+//         display: block;
+//     }
+// }
+
+
+.SA_text-wrap { 
+    // margin: 0 calc((100% * 1/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 1/14) + #{($margins/2) +"px"});
+    display: block;
+
+    @include tablet {
+        // margin: 0 calc((100% * 1/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 4/14) + #{($margins/2) +"px"});
+        // margin: 0 calc((100% * 3/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 3/14) + #{($margins/2) +"px"});
+        //margin: 0 calc((100% * 2/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 3/14) + #{($margins/2) +"px"});
+        width: calc((100% * 9/14) - #{($margins) +"px"});
+        width: calc((100% * 10/14) - #{($margins) +"px"});
+        margin: 0 auto;
+    }
+
+    @include desktop {
+        // margin: 0 calc((100% * 4/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 4/14) + #{($margins/2) +"px"});
+        width: calc((100% * 8/14) - #{($margins) +"px"});
+        width: calc((100% * 6/14) - #{($margins) +"px"});
+        margin: 0 calc((100% * 4/14) + #{($margins)/2 +"px"}) 0 calc((100% * 4/14) + #{($margins)/2 +"px"});
+        //margin: 0 auto;
+        display: block;
+    }
+}
+
+.SA_centered-text-wrap {
+    margin: 0 calc((100% * 1/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 1/14) + #{($margins/2) +"px"});
+    display: block;
+
+    @include tablet {
+        margin: 0 calc((100% * 2/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 2/14) + #{($margins/2) +"px"});
+
+    }
+
+    @include desktop {
+        margin: 0 calc((100% * 3/14) + #{($margins/2) +"px"}) #{($margins/2) +"px"} calc((100% * 3/14) + #{($margins/2) +"px"});
+        display: block;
+    }
+}
+
+.SA_col {
+    height: auto;
+    position: relative;
+
+    &.SA_spacer {
+        background: none !important;
+    }
+
+    &.SA_col--1 {
+        width: calc((100% * 1/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 1/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--2 {
+        width: calc((100% * 2/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 2/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--3 {
+        width: calc((100% * 3/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 3/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--4 {
+        width: calc((100% * 4/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 4/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--5 {
+        width: calc((100% * 5/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 5/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--6 {
+        width: calc((100% * 6/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 6/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--7 {
+        width: calc((100% * 7/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 7/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--8 {
+        width: calc((100% * 8/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 8/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--9 {
+        width: calc((100% * 9/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 9/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--10 {
+        width: calc((100% * 10/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 10/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--11 {
+        width: calc((100% * 11/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 11/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--12 {
+        width: calc((100% * 12/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 12/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--13 {
+        width: calc((100% * 13/14) - #{($margins) +"px"});
+        flex-basis: calc((100% * 13/14) - #{($margins) +"px"});
+    }
+
+    &.SA_col--14 {
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+}
+
+// .SA_col:first-child,
+// .SA_col:last-child {
+
+//     &.SA_col--1 {
+//         width: calc((100% * 1/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--2 {
+//         width: calc((100% * 2/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--3 {
+//         width: calc((100% * 3/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--4 {
+//         width: calc((100% * 4/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--5 {
+//         width: calc((100% * 5/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--6 {
+//         width: calc((100% * 6/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--7 {
+//         width: calc((100% * 7/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--8 {
+//         width: calc((100% * 8/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--9 {
+//         width: calc((100% * 9/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--10 {
+//         width: calc((100% * 10/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--11 {
+//         width: calc((100% * 11/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--12 {
+//         width: calc((100% * 12/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--13 {
+//         width: calc((100% * 13/14) - #{($margins/2) +"px"});
+//     }
+
+//     &.SA_col--14 {
+//         width: 100%;
+//     }
+
+// }
+
+/*! purgecss start ignore */
+@include mobile {
+    :not(.SA_flex-grid--no-stack)>.SA_col {
+        width: 100% !important;
+        margin-bottom: #{($margins) +"px"};
+    }
+}
+
+/*! purgecss end ignore */

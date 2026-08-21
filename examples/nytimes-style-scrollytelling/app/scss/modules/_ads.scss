@@ -1,0 +1,73 @@
+.SA_advertisement {
+    padding: 0.5rem 0 0.75rem;
+    margin: 0.75rem 0 2rem;
+    background-color: #{$pullQuote};
+            @include tablet {
+                margin: 0.75rem auto 2.25rem;
+            }
+            @include desktop {
+                margin: 0.75rem auto 2.5rem;
+            }
+    @include e('title') {
+        font-family: $captionfont;
+        color: $captioncolour;
+        font-size: 0.75rem;
+        line-height: 0.75rem;
+        text-align: center;
+        padding-bottom: 0.5rem;
+        margin:0;
+    }
+    @include e('ad-container') {
+        margin: 0 auto;
+        @include m('mobile') {
+            max-width: 300px;
+            display: block;
+            @include ad-switch {
+                display: none;
+             }
+        }
+
+        @include m('mobile-alone') {
+            display: block;
+            max-width: 300px;
+
+        }
+        @include m('desktop') {
+            display: none;
+            max-width: 728px;
+            @include ad-switch {
+                display: block;
+             }
+        }
+
+        @include m('desktop-withxl') {
+            display: none;
+            max-width: 728px;
+            @include ad-switch {
+                display: block;
+             }
+            @include ad-switch-lrg {
+                display: none;
+             }
+        }
+
+        @include m('xl-desktop') {
+            display: none;
+            max-width: 970px;
+            
+
+            @include ad-switch-lrg {
+                display: flex;
+                align-items: center;
+             }
+        }
+    }
+}
+
+.SA_section--light .SA_advertisement {
+     background-color: #f1eee8; 
+ }
+
+ .SA_section--dark .SA_advertisement {
+     background-color: rgba(255, 255, 255, 0.04); 
+ }

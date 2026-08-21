@@ -1,0 +1,13 @@
+diff --git a/node_modules/gulp-lazysizes-srcset/index.js b/node_modules/gulp-lazysizes-srcset/index.js
+index 4e06cbc..a7a09b3 100644
+--- a/node_modules/gulp-lazysizes-srcset/index.js
++++ b/node_modules/gulp-lazysizes-srcset/index.js
+@@ -32,7 +32,7 @@ var lazyScr = function(options){
+ 
+ 		var $ = cheerio.load( content, options );
+ 
+-		var imgList = $('img[data-sizes]');
++		var imgList = $('img[data-sizes], source[data-sizes]');
+ 
+ 		imgList.each(function(item){
+ 			var _this = $(this);

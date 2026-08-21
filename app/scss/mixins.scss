@@ -1,0 +1,80 @@
+@mixin e($element) {
+  &__#{$element} {
+    @content;
+  }
+}
+
+@mixin m($modifier) {
+  &--#{$modifier} {
+    @content;
+  }
+}
+
+$ad-switch-width: 1045;
+$ad-switch-width-large: 972;
+
+$mobile-width: 700;
+$tablet-width: 701;
+$desktop-width: 1025;
+$xl-desktop-width: 1600;
+
+@mixin mobile {
+  @media (max-width: #{$mobile-width+ "px"} ) {
+    @content;
+  }
+}
+
+@mixin mobile-only {
+  @media (max-width: #{$mobile-width+ "px"} ) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: #{$tablet-width+ "px"}) {
+    @content;
+  }
+}
+
+@mixin tablet-only {
+  @media (min-width: #{$tablet-width+ "px"}) and (max-width: #{($desktop-width - 1) + "px"} ){
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: #{$desktop-width+ "px"}) {
+    @content;
+  }
+}
+
+@mixin desktop-only {
+  @media (min-width: #{$desktop-width+ "px"}) and (max-width: #{($xl-desktop-width - 1) + "px"} ){
+    @content;
+  }
+}
+
+@mixin xl-desktop {
+  @media (min-width: #{$xl-desktop-width+ "px"}) {
+    @content;
+  }
+}
+
+@mixin xl-desktop-only {
+  @media (min-width: #{$xl-desktop-width+ "px"}) {
+    @content;
+  }
+}
+
+
+@mixin ad-switch {
+  @media (min-width: #{$ad-switch-width+ "px"}) {
+    @content;
+  }
+}
+
+@mixin ad-switch-lrg {
+  @media (min-width: #{$ad-switch-width-large+ "px"}) {
+    @content;
+  }
+}

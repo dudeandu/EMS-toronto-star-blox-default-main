@@ -1,0 +1,345 @@
+@use '../mixins' as *;
+@use 'variables' as *;
+
+#SA_footer {
+    margin-top: 2em;
+    background: #{$pullQuote};
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    align-items: center;
+}
+
+#SA_footer p {
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif !important;
+}
+
+
+#SA_footer {
+    background: #ededed;
+    position: relative;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+    margin-top: 0;
+
+    & a {
+        text-decoration: none;
+        color: #333;
+    }
+
+
+    @include tablet {
+        margin-top: 0;
+    }
+
+}
+
+
+
+.SA_footer-content {
+    padding: 1.5rem 0.25rem;
+    overflow: hidden;
+    max-width: 1024px;
+    margin: 0 auto;
+    color: #fff;
+
+    @include tablet {
+        padding: 2rem 1rem;
+        text-align: right;
+    }
+
+    @include desktop {
+        padding: 2rem 1rem;
+    }
+
+    @include e('copyright') {
+        padding-bottom: 0.75rem;
+
+
+        @include tablet {
+            text-align: left;
+            float: left;
+            width: 50%;
+            padding-bottom: 0;
+        }
+    }
+
+    @include e('footer-nav') {
+        padding: 0;
+        margin: 0;
+
+        @include tablet {
+            float: right;
+            width: 50%;
+
+        }
+
+        &:after {
+            display: table;
+            content: "";
+            clear: both;
+        }
+
+        @include e('item') {
+            list-style: none;
+            display: inline-block;
+            margin: 0 1.2rem 0;
+
+            a {
+                color: #fff !important;
+            }
+
+            @include m('last') {
+                margin-right: 0;
+            }
+        }
+
+
+    }
+}
+
+
+.SA_credit-container {
+    box-sizing: border-box;
+    padding: 2rem 1rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @include e('inner-wrapper') {
+        margin: 0 auto;
+
+        @include e('individual') {
+
+            margin: 0 1rem 1rem 0;
+            white-space: nowrap;
+            display: inline;
+
+            @include tablet {
+                margin-right: 0 1.5rem 1.5rem 0;
+            }
+
+            @include desktop {
+                margin-right: 0 2rem 2rem 0;
+
+            }
+
+
+            @include e('title') {
+                font-size: 0.8125rem!important;
+                line-height: 1em!important;
+                padding-right: 0.125rem;
+                color: rgba(0, 0, 0, 0.76);
+                display: inline;
+                margin: 0;
+
+                @include tablet {
+                    font-size: 0.875rem!important;
+                }
+
+            }
+
+            @include e('name') {
+                font-size: 0.8125rem!important;
+                line-height: 1.25rem!important;
+                color: #000;
+                font-weight: bold!important;
+                letter-spacing: 0.025rem;
+                display: inline;
+                margin: 0;
+
+                span {
+                    white-space: nowrap;
+                    display: inline-block;
+                }
+
+                @include tablet {
+                    font-size: 0.875rem!important;
+                }
+            }
+
+        }
+
+    }
+}
+
+.SA_subscribe-cta-wrapper {
+    font-size: 1rem;
+    line-height: 1.3;
+    background: #0065a4;
+    padding-top: 2rem;
+
+    p {
+        max-width: 90vw;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+        text-align: left;
+    }
+
+    .SA_subscribeButton {
+        width: calc(100% - 80px);
+        position: relative;
+        margin: 2rem 0 0 0;
+
+        @include desktop {
+            width: 90px;
+        }
+    }
+
+    .SA_subscribe-btn-title {
+        color: #0065a4;
+    }
+}
+
+
+//Crosslinking 
+
+
+.SA_crosslink-wrapper {
+    padding: 0;
+    /*max-width: 968px;*/
+    margin: 0 auto;
+    background-color: #fafafa;
+}
+
+.SA_crosslink-background {
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center top;
+    position: relative;
+}
+
+.SA_crosslink-icon {
+    width: 30px;
+    height: 30px;
+    opacity: 0.5;
+    transition: all 0.2s linear;
+}
+
+.SA_crosslink-wrapper a {
+    text-decoration: none;
+}
+
+.SA_crosslink-wrapper a:hover .SA_crosslink-icon {
+    opacity: 1;
+    transition: all 0.3s linear;
+}
+
+.SA_crosslink-wrapper h4 {
+    font-family: 'Oswald';
+    text-transform: uppercase;
+    color: white;
+    margin-bottom: 5px;
+    font-size: 16pt;
+    margin-top: 0px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.SA_crosslink-wrapper p {
+    color: white;
+    opacity: 0.75;
+    font-family: 'Inter';
+    font-weight: 300;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    font-weight: 300;
+    font-size: 11pt;
+}
+
+.SA_crosslink-menu-items {
+    width: 100%;
+    padding: 15px 0 1px 0;
+    background-color: black;
+}
+
+.SA_crosslink-menu-item {
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-left: 10px;
+    transition: all 0.3s linear;
+}
+
+.SA_crosslink-menu-item:not(.SA_crosslink-inactive):hover {
+    padding-left: 10px;
+    transition: all 0.3s linear;
+}
+
+.SA_crosslink-menu-item.SA_crosslink-inactive {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.SA_crosslink-divider {
+    width: 100%;
+    height: 0.5px;
+    background-color: grey;
+    opacity: 0.3;
+}
+
+#SA_crosslink-story-1 {
+    border-left: 3px solid #f15252;
+}
+
+#SA_crosslink-story-2 {
+    border-left: 3px solid #8d71ab;
+}
+
+#SA_crosslink-story-3 {
+    border-left: 3px solid #f5b53d;
+}
+
+#SA_crosslink-story-4 {
+    border-left: 3px solid #76aeb8;
+}
+
+#SA_crosslink-story-5 {
+    border-left: 3px solid #e68a45;
+}
+
+.SA_crosslink-red {
+    color: #f15252;
+}
+
+.SA_crosslink-purple {
+    color: #8d71ab;
+}
+
+.SA_crosslink-yellow {
+    color: #f5b53d;
+}
+
+.SA_crosslink-blue {
+    color: #76aeb8;
+}
+
+.SA_crosslink-orange {
+    color: #e68a45;
+}
+
+.SA_crosslink-read {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    font-size: 10pt;
+    margin-bottom: 20px;
+}
+
+@media (max-width:727px) {
+    .SA_crosslink-menu-items {
+        width: 100%;
+    }
+
+    .SA_crosslink-background {
+        background-image: url("tst-square.jpg");
+    }
+}
+
+@media (max-width:450px) {
+    .SA_crosslink-menu-items {
+        width: 100%;
+    }
+}
