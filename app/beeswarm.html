@@ -1,0 +1,43 @@
+<section class="SA_ems-beeswarm" aria-labelledby="SA_ems-beeswarm-title">
+    <header class="SA_ems-beeswarm__intro">
+        <p class="SA_ems-beeswarm__eyebrow">Toronto Star analysis</p>
+        <h3 id="SA_ems-beeswarm-title">How long Toronto patients waited for an ambulance</h3>
+        <p>Each dot represents one of more than 315,000 emergency calls assigned one of five main priority levels. Scroll to move through response times and examine calls highlighted by the Star.</p>
+    </header>
+
+    <div class="SA_ems-beeswarm__scrolly" data-ems-beeswarm>
+        <div class="SA_ems-beeswarm__graphic">
+            <div class="SA_ems-beeswarm__legend" aria-label="Final priority legend">
+                <span><i data-priority="purple"></i>Purple</span>
+                <span><i data-priority="red-acp"></i>Red (ACP)</span>
+                <span><i data-priority="red-pcp"></i>Red (PCP)</span>
+                <span><i data-priority="orange"></i>Orange</span>
+                <span><i data-priority="yellow"></i>Yellow</span>
+            </div>
+            <p class="SA_ems-beeswarm__loading" data-ems-beeswarm-loading>Loading ambulance calls…</p>
+            <canvas data-ems-beeswarm-canvas aria-label="A scrolling beeswarm showing Toronto ambulance response times from zero minutes to eight hours"></canvas>
+            <svg class="SA_ems-beeswarm__svg" data-ems-beeswarm-svg role="img" aria-live="polite" aria-label="Highlighted ambulance call"></svg>
+        </div>
+
+        <div class="SA_ems-beeswarm__steps">
+            <div class="SA_ems-beeswarm__step" data-mode="dots" data-seconds="2700" data-title="Every dot is an ambulance call" data-copy="The dots are grouped by the final priority paramedics assigned after assessing the patient. Response time increases as the graphic moves down."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="targets-purple" data-seconds="360" data-title="Target: Purple" data-copy="Purple calls are imminently life-threatening. Toronto’s official P90 response target is six minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="targets-red" data-seconds="539" data-title="Target: Red" data-copy="Red calls are potentially life-threatening. Both advanced-care and primary-care Red calls have a target of eight minutes and 59 seconds."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="targets-orange" data-seconds="1500" data-title="Target: Orange" data-copy="Orange calls are urgent. Their official response target is 25 minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="targets-yellow" data-seconds="2700" data-title="Target: Yellow" data-copy="Yellow calls have the lowest emergency acuity. Their official response target is 45 minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="means" data-seconds="2700" data-title="What happened on average" data-copy="Solid lines show the mean arrival time for calls in each priority—the total response time divided by the number of calls."></div>
+            <div class="SA_ems-beeswarm__step" data-mode="p90" data-seconds="2700" data-title="These targets use P90" data-copy="A P90 target means at least 90 per cent of calls should receive a response within the stated time. The average lines provide context, but target compliance is measured at the 90th percentile."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9469026" data-priority="0-PURPLE" data-seconds="1233" data-time="April 24, 2026 · 8:45 a.m." data-title="Choking · Red upgraded to Purple" data-copy="A choking call in northern Scarborough was upgraded to imminently life-threatening. Paramedics arrived 20 minutes and 33 seconds after the initial call."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9251343" data-priority="1-RED (ACP)" data-seconds="1319" data-time="Dec. 2, 2025 · 7:28 a.m." data-title="Stabbing · Orange upgraded to Red" data-copy="A woman in her 50s was stabbed and left with life-threatening injuries. An ambulance arrived after 21 minutes and 59 seconds."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9204200" data-priority="0-PURPLE" data-seconds="2022" data-time="Nov. 1, 2025 · 1:02 p.m." data-title="Hemorrhage · Orange upgraded to Purple" data-copy="A patient in the M6A area waited 33 minutes and 42 seconds for the first of three ambulances assigned to the call."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9330507" data-priority="1-RED (ACP)" data-seconds="2268" data-time="Jan. 20, 2026 · 10:09 a.m." data-title="Unstable heart attack · Red" data-copy="Paramedics arrived after 37 minutes and 48 seconds—one of three unstable, potentially life-threatening STEMI calls with waits above 20 minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9228674" data-priority="0-PURPLE" data-seconds="2906" data-time="Nov. 17, 2025 · 12:51 p.m." data-title="Psychiatric emergency · Orange upgraded to Purple" data-copy="A downtown call became imminently life-threatening. The first vehicle arrived 48 minutes and 26 seconds after the initial call."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9301125" data-priority="2-RED (PCP)" data-seconds="3969" data-time="Dec. 31, 2025 · 9:30 a.m." data-title="Stroke · Red" data-copy="A patient in northwest Toronto waited one hour and six minutes for paramedics."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9258073" data-priority="3-ORANGE" data-seconds="4249" data-time="Dec. 6, 2025 · 12:47 a.m." data-title="Chest pain · Orange" data-copy="A father of two experienced sharp, sudden chest pain at home. His wait for paramedics was one hour and 10 minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9255004" data-priority="3-ORANGE" data-seconds="6434" data-time="Dec. 4, 2025 · 10:28 a.m." data-title="Fall · Orange" data-copy="A man fell down a flight of stairs during a photoshoot and sustained painful injuries. He waited one hour and 47 minutes."></div>
+            <div class="SA_ems-beeswarm__step" data-call-id="9270295" data-priority="4-YELLOW" data-seconds="27854" data-time="Dec. 12, 2025 · 9:44 p.m." data-title="Fall · Yellow" data-copy="A patient in Scarborough waited seven hours and 44 minutes after the initial 9-1-1 call before paramedics arrived."></div>
+        </div>
+    </div>
+
+    <p class="SA_ems-beeswarm__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+</section>
