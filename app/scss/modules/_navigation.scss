@@ -1,4 +1,6 @@
 //sass --watch scss/app.scss:css/main.css
+@use 'variables' as *;
+
 $mobileSwitch: 880px;
 
 .SA_ieMenuParent {
@@ -8,13 +10,13 @@ $mobileSwitch: 880px;
     z-index: 10;
     top: 50px;
     list-style: none;
-    font-family: 'Lato', sans-serif;
+    font-family: $sansFont;
     text-transform: uppercase;
     font-size: 0.9rem;
-    background: #fff;
+    background: $surfaceBackground;
     top: 33px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid $borderColour;
     width: 100%;
 
     img {
@@ -28,7 +30,7 @@ $mobileSwitch: 880px;
 
     a {
         line-height: 1.6;
-        color: #484848;
+        color: $navigationText;
         text-decoration: none;
     }
 }
@@ -59,7 +61,7 @@ $mobileSwitch: 880px;
 
 .SA_top-bar {
     width: calc(100% - 14px);
-    background: #fff;
+    background: $surfaceBackground;
 
     // border-bottom: 1px solid #eaeaea;
 
@@ -89,7 +91,7 @@ $mobileSwitch: 880px;
 }
 
 .SA_subscribeButton {
-    font-family: Merriweather Sans, Helvetica, Roboto, Arial, sans-serif;
+    font-family: $navigationFont;
     font-weight: 400;
     line-height: normal;
     top: 0;
@@ -101,17 +103,17 @@ $mobileSwitch: 880px;
     text-decoration: none;
     border-radius: 5px;
     border: 0;
-    background-color: #0065a4;
-    background-color: #e2e2e2;
-    background-color: transparent;
-    border: 1px solid #e8e8e8;
+    background-color: $starblue;
+    background-color: $controlBackground;
+    background-color: $transparent;
+    border: 1px solid $controlBorder;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     -webkit-font-smoothing: antialiased;
     transition: background 0.3s;
     // margin: 0 41px 0 0;
-    background-color: #0062a1;
+    background-color: $starblue;
     border: 0;
 
     @media only screen and (min-width: $mobileSwitch) {
@@ -136,7 +138,7 @@ $mobileSwitch: 880px;
     // }
 
     &:hover {
-        background-color: #1174b9;
+        background-color: $subscribeHover;
     }
 }
 
@@ -145,7 +147,7 @@ $mobileSwitch: 880px;
     display: block;
     font-size: 14px;
     font-weight: 700;
-    color: #fff;
+    color: $white;
     // color: #101010;
 
     // @include tablet {

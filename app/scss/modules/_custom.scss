@@ -1,82 +1,427 @@
 @use 'variables' as *;
 
-// This is custom code for the documentation. Delete it before adding your own
-xmp {
-    max-width: 100%;
-    overflow: scroll;
-    font-size: 14px;
+.SA_body-section {
+    padding-top: clamp(4rem, 10vh, 8rem);
 }
 
-.SA_text-wrap .SA_h1,
-.SA_text-wrap .SA_h2,
-.SA_text-wrap .SA_h3,
-.SA_text-wrap .SA_h4,
-.SA_text-wrap .SA_h5,
-.SA_text-wrap .SA_h6 {
-    font-family: $captionfont !important;
+.SA_opening-timeline {
+    background: $bodyBackground;
+    color: $bodyText;
+
+    &__scrolly {
+        margin-top: 0;
+
+        > .SA_scrollytelling-images {
+            margin-bottom: -100vh;
+        }
+    }
+
+    &__background {
+        overflow: hidden;
+        background: $black;
+
+        picture,
+        img,
+        &::after {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        img {
+            object-fit: cover;
+            filter: grayscale(1);
+            opacity: 0;
+            transition: opacity 4s ease;
+        }
+    }
+
+    &--revealed &__background img {
+        opacity: 1;
+    }
+
+    &__shade {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: $timelineShade;
+    }
+
+    &__track {
+        --timeline-offset: 0%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 2;
+        width: 220vw;
+        height: 1px;
+        color: $timelineMutedText;
+        transform: translate3d(var(--timeline-offset), -50%, 0);
+        transition: transform 80ms linear;
+        will-change: transform;
+    }
+
+    &__rule {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        border-top: 1px solid $timelineLine;
+    }
+
+    &__tick {
+        position: absolute;
+        top: 0;
+        left: var(--tick-position);
+        min-width: 8rem;
+        font-family: $slabFont;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: $transparent;
+        text-align: center;
+        transform: translateX(-50%);
+        transition: color 500ms ease;
+
+        &--visible {
+            color: $timelineMutedText;
+        }
+
+        &--call {
+            min-width: 13rem;
+            font-weight: 700;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: -0.3rem;
+            left: 50%;
+            width: 0.6rem;
+            height: 0.6rem;
+            border-radius: 50%;
+            background: $timelineLine;
+            transform: translateX(-50%);
+        }
+    }
+
+    &__event,
+    &__marker-time {
+        position: absolute;
+        left: 50%;
+        width: max-content;
+        max-width: 13rem;
+        transform: translateX(-50%);
+    }
+
+    &__event {
+        bottom: 1rem;
+        font-weight: 700;
+    }
+
+    &__marker-time {
+        top: 1rem;
+        font-weight: 500;
+    }
+
+    .SA_scroll-text-wrapper {
+        padding: 25vh 0 !important;
+
+        * {
+            color: $white !important;
+        }
+    }
+
+    &__card {
+        position: relative;
+        top: auto;
+        width: min(90vw, 720px);
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 1.25rem 1.5rem;
+        border: 0;
+        border-radius: 0;
+        background: $transparent;
+        text-align: center;
+        text-shadow: 0 2px 18px $timelineTextShadow;
+        opacity: 1;
+        transform: translateY(-9rem);
+
+        p {
+            margin: 0;
+            font-family: $displayFont;
+            font-size: clamp(1.55rem, 4vw, 3.2rem);
+            font-weight: 500;
+            line-height: 1.15 !important;
+        }
+    }
+
+    &__time {
+        font-family: $slabFont !important;
+        font-size: clamp(2.5rem, 10vw, 7rem) !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.04em;
+
+        span {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: clamp(0.75rem, 2vw, 1rem);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+    }
+
+    &__card--opening-time {
+        padding: 0.25rem 0.5rem;
+        transform: translateY(-10.5rem);
+
+        .SA_opening-timeline__time {
+            line-height: 0.95 !important;
+        }
+    }
+
+    &__sound-choice {
+        --sound-choice-opacity: 1;
+        --sound-choice-shift: 0rem;
+        position: absolute;
+        top: 60vh;
+        left: 50%;
+        width: min(92vw, 40rem);
+        margin: 0 auto;
+        padding: 1.25rem 1.5rem;
+        opacity: var(--sound-choice-opacity);
+        transform: translate(-50%, var(--sound-choice-shift));
+        transition: opacity 180ms linear, transform 180ms linear;
+
+        > p {
+            font-family: $codeFont !important;
+            font-size: clamp(1rem, 2.3vw, 1.55rem) !important;
+            font-weight: 400;
+            line-height: 1.5 !important;
+            text-align: center;
+        }
+    }
+
+    &__sound-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+
+        button {
+            min-width: 12rem;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid $timelineLine;
+            border-radius: 3px;
+            background: $transparent;
+            color: $timelineMutedText;
+            font-family: $codeFont;
+            font-size: 0.9rem;
+            cursor: pointer;
+
+            &:hover,
+            &:focus-visible,
+            &[aria-pressed='true'] {
+                border-color: $white;
+                color: $white;
+            }
+
+            &:focus-visible {
+                outline: 2px solid $white;
+                outline-offset: 3px;
+            }
+        }
+    }
+
+    &__audio {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+    }
+
+    &__audio-card {
+        padding: 1.5rem;
+        background: $timelineCardBackground;
+    }
+
+    &__transcript {
+        font-family: $codeFont !important;
+        font-size: clamp(0.95rem, 2.1vw, 1.25rem) !important;
+        line-height: 1.55 !important;
+
+        strong {
+            font-family: $slabFont !important;
+            font-weight: 700;
+        }
+    }
+
+    &__transcript-line {
+        display: block;
+        margin-top: 0.65rem;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    &__speaker--dispatcher {
+        color: $timelineDispatcher !important;
+
+        .SA_opening-timeline__word {
+            color: $timelineDispatcher !important;
+        }
+    }
+
+    &__speaker--caller {
+        color: $timelineCaller !important;
+
+        .SA_opening-timeline__word {
+            color: $timelineCaller !important;
+        }
+    }
+
+    &__word {
+        color: $timelineUnheardText !important;
+        transition: color 140ms linear;
+    }
+
+    &__word--heard {
+        color: $white !important;
+    }
+
+    &__mute {
+        margin-top: 1.25rem;
+        padding: 0.55rem 0.85rem;
+        border: 1px solid $timelineLine;
+        border-radius: 999px;
+        background: $transparent;
+        color: $white;
+        font-family: $codeFont;
+        font-size: 0.75rem;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid $white;
+            outline-offset: 3px;
+        }
+    }
+
+    &__asset-note,
+    &__audio-status {
+        margin-top: 1rem !important;
+        font-family: $captionfont !important;
+        font-size: 0.75rem !important;
+        color: $timelineMutedText !important;
+    }
+
+    &__card--final {
+        border-top: 2px solid $white;
+        border-bottom: 2px solid $white;
+    }
 }
 
-.SA_text-wrap .SA_h1 {
-    text-align: left;
-    position: sticky;
-    top: 0;
-    background: #f8f8f8;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-    font-size: 2rem;
+@media (max-width: 600px) {
+    .SA_opening-timeline__track {
+        top: 62%;
+    }
+
+    .SA_opening-timeline__sound-choice { top: 70vh; }
 }
 
-// .SA_text-wrap .SA_h2{
+@media (prefers-reduced-motion: reduce) {
+    .SA_opening-timeline__background img {
+        transition: none;
+    }
+
+    .SA_opening-timeline__track {
+        transform: translate3d(0, -50%, 0);
+        transition: none;
+    }
+}
+
+// // This is custom code for the documentation. Delete it before adding your own
+// xmp {
+//     max-width: 100%;
+//     overflow: scroll;
+//     font-size: 14px;
+// }
+
+// .SA_text-wrap .SA_h1,
+// .SA_text-wrap .SA_h2,
+// .SA_text-wrap .SA_h3,
+// .SA_text-wrap .SA_h4,
+// .SA_text-wrap .SA_h5,
+// .SA_text-wrap .SA_h6 {
+//     font-family: $captionfont !important;
+// }
+
+// .SA_text-wrap .SA_h1 {
+//     text-align: left;
 //     position: sticky;
-//     top: 2.5em;
+//     top: 0;
 //     background: #f8f8f8;
 //     padding: 10px 0;
 //     border-bottom: 1px solid #ddd;
+//     font-size: 2rem;
 // }
 
-.SA_h2 {
-    text-decoration: underline;
-}
+// // .SA_text-wrap .SA_h2{
+// //     position: sticky;
+// //     top: 2.5em;
+// //     background: #f8f8f8;
+// //     padding: 10px 0;
+// //     border-bottom: 1px solid #ddd;
+// // }
 
-.SA_h3 {
-    color: #737373;
-}
+// .SA_h2 {
+//     text-decoration: underline;
+// }
 
-.SA_toc-item {
-    display: block;
-    position: relative !important;
-    font-size: 16px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-weight: 500 !important;
-    background: transparent !important;
-    border: none !important;
-}
+// .SA_h3 {
+//     color: #737373;
+// }
 
-.SA_toc-item.SA_h1 {
-    margin-top: 1em !important;
-    margin-left: 0em !important;
-    font-weight: bold !important;
-}
+// .SA_toc-item {
+//     display: block;
+//     position: relative !important;
+//     font-size: 16px !important;
+//     padding: 0 !important;
+//     margin: 0 !important;
+//     font-weight: 500 !important;
+//     background: transparent !important;
+//     border: none !important;
+// }
 
-.SA_toc-item.SA_h2 {
-    margin-left: 1em !important;
-}
+// .SA_toc-item.SA_h1 {
+//     margin-top: 1em !important;
+//     margin-left: 0em !important;
+//     font-weight: bold !important;
+// }
 
-.SA_toc-item.SA_h3 {
-    margin-left: 2em !important;
-}
+// .SA_toc-item.SA_h2 {
+//     margin-left: 1em !important;
+// }
 
-.warning_message {
-	position: fixed;
-    bottom: 0;
-    right: 0;
-    z-index: 100;
-    width: 300px;
-    background: red;
-    color: #fff;
-    padding: 10px;
-     font-family: $captionfont !important;
-}
+// .SA_toc-item.SA_h3 {
+//     margin-left: 2em !important;
+// }
 
-// This is custom code for the documentation. Delete it before adding your own
+// .warning_message {
+// 	position: fixed;
+//     bottom: 0;
+//     right: 0;
+//     z-index: 100;
+//     width: 300px;
+//     background: red;
+//     color: #fff;
+//     padding: 10px;
+//      font-family: $captionfont !important;
+// }
+
+// // This is custom code for the documentation. Delete it before adding your own

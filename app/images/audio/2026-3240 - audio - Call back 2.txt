@@ -1,0 +1,21 @@
+Dispatcher: Toronto ambulance, where do you need us?
+Caller: Uh, well I already made a call, just after 6 o'clock, and...
+Dispatcher: What's the address?
+Caller: It's 582 Dovercourt Road.
+Dispatcher: What's your name?
+Caller: Laura.
+Dispatcher: Okay, tell me exactly what happened.
+Caller: Uh, well so I called, my husband fell off his bicycle earlier today, and uh, he's in an extreme amount of pain in his leg. Um, he's unable to stand up, which is why we called the ambulance, because we live on the second floor, so he can't get down the stairs. Um, he's in a lot of pain. Um, and...
+Dispatcher: Is he awake?
+Caller: He's awake. 
+Dispatcher: Is he breathing?
+Caller: He's conscious, he's breathing, he's awake.
+Dispatcher: Is he responding normally?
+Caller: Yes, yes. Just screaming in pain sometimes.
+Dispatcher: Okay, I apologize for the delay. Unfortunately, it's really busy in the city and our ambulances are responding to life-or-death emergencies. Uh, so at this time we don't have anyone to respond. As soon as an ambulance becomes available, we'll send one over to you. And we have the call in our queue, we haven't forgotten about him.
+Caller: Okay. All right, all right. Thank you.
+Dispatcher: Okay, no problem. Take care.
+Caller: Okay. Bye-bye.
+Dispatcher: If anything changes, call us back immediately, okay?
+Caller: Will do. Thank you.
+Dispatcher: Okay. Take care. Bye.

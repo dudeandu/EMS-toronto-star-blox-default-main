@@ -68,9 +68,9 @@
 }
 
 .SA_section--light .SA_advertisement {
-     background-color: #f1eee8; 
+     background-color: $adBackground;
  }
 
  .SA_section--dark .SA_advertisement {
-     background-color: rgba(255, 255, 255, 0.04); 
+     background-color: $subtleLightBorder;
  }

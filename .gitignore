@@ -105,3 +105,6 @@ dist
 .DS_Store
 app/.DS_Store
 app/.DS_Store
+
+# Local EMS response data and dashboard workspace
+/app/tor-ems-responses-data-and-dashboard/

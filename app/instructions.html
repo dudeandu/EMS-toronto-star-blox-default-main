@@ -1,0 +1,521 @@
+<!-- ========================================
+                     TEXT GRID SECTION
+                     Standard text content wrapper with table of contents
+                     Use .SA_text-grid and .SA_text-wrap for body text
+                     ======================================== -->
+                <div class="SA_text-grid">
+                    <div class="SA_text-wrap">
+                        <strong style="font-size: 16px;font-family: Inter,sans-serif;">Table of contents</strong>
+                        <br>
+                        <div id="SA_toc"></div>
+                        <hr>
+                        <!-- ========================================
+                             INSTALLATION & USAGE DOCUMENTATION
+                             Instructions for developers - can be removed for production
+                             ======================================== -->
+                        <h2 class="SA_h1">Installation and usage</h2>
+                        <h2 class="SA_h2">Installation</h2>
+                        <ol>
+                            <li>Install <a href="https://nodejs.org/en/download/">node.js</a> v14.17.0 and <a href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm">npm</a> v6.14.13</li>
+                            <li>Install <a href="https://gulpjs.com/docs/en/getting-started/quick-start/">gulp</a> and the <a href="https://gulpjs.com/docs/en/getting-started/quick-start/#install-the-gulp-command-line-utility">gulp command line utility</a></li>
+                            <li>Navigate to the root folder in terminal and run the following command<br><code>npm install --save-dev && npx patch-package && gulp</code></li>
+                            <li>Update database if necessary using <code>npx browserslist@latest --update-db</code></li>
+                            <li>Open <code>gulpfile.js</code> and change the <code>projectPath</code> and <code>macroName</code> variable names to match your project. This is not required. It is only to make it easier for you whe you run <code>gulp buildLive</code></li>
+                        </ol>
+                        <h2 class="SA_h2">Usage
+                        </h2>
+                        <ul>
+                            <li><strong>make edits to files in the /app folder only</strong></li>
+                            <li>add images & video to the /app/img folder</li>
+                            <ul>
+                                <li>running gulp build will copy everything to the /dist folder compressing images, parsing sass and minifying+combining css/js in the process</li>
+                            </ul>
+                            <li><strong>the /dist folder contains your final project</strong></li>
+                            <li><strong>Please use only _custom.scss and custom.js whenever possible</strong></li>
+                        </ul>
+                        <h2 class="SA_h2">Gulp Commands</h2>
+                        <code>gulp build</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>creates a build in the /dist folder
+                            </li>
+                            <li>will delete all files and folders other than the /img folder before running
+                            </li>
+                            <li>this means that new images will be proccess but if you made any changes to existing images they will not be copied over. To reprocess all the images again use gulp rebuild</li>
+                        </ul>
+                        <code>gulp rebuild</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>same as gulp build but deletes the /img folder first and copies all the images over</li>
+                        </ul>
+                        <code>gulp buildLive</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>Creates a build that you can copy directly into blox. It will add the blox macro code to the top of the document from <code>index-live.html</code>.</li>
+                            <li>Make sure you have set your <code>projectPath</code> and <code>macroName</code> in <code>gulpfile.js</code> or edit the <code>index.html</code> file in dist after running this.</li>
+                        </ul>
+                        <code>gulp buildDirect</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>instead of proccessing and minifying js this just copys it. Usefull if you are getting js errors</li>
+                        </ul>
+                        <code>gulp purge</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>use this as the last step after gulp build/rebuild if you want smaller css files
+                            </li>
+                            <li>goes through the main.css file in /dist and removes all unused css
+                            </li>
+                            <li>be careful when using this. It might sometimes remove css that you need.
+                            </li>
+                            <li>in gulpfile.js under the purge function there is a whitelist where you can add css classes that you don't want to be removed
+                            </li>
+                            <li>always check that the page is still working properly at all breakpoints and especially for classes that are added via javascript</li>
+                        </ul>
+                        <code>gulp watch</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>watches for changes in html, css, js and image files then updates a browser preview whenever a file is saved</li>
+                            <li>ctrl/cmd C in the command line to stop it</li>
+                        </ul>
+                        <code>gulp</code>
+                        <ul style="margin: 0.5em 0 1em 0;">
+                            <li>a shortcut for gulp build</li>
+                        </ul>
+                        <hr>
+                        <h1 class="SA_h1">Scrollytelling</h1>
+                        <h2 class="SA_h2">Basic usage</h2>
+                        <p>There are many options for the the scrollytelling feature but the basic layout will look like this:
+                            <xmp>
+                                <div class="SA_scrollytelling-wrapper">
+                                    <div class="SA_scrollytelling-images">
+                                        <div class="SA_fullscreen-image">
+                                            Your first scrollytelling image/graphic goes here
+                                        </div>
+                                        <div class="SA_fullscreen-image">
+                                            Your second scrollytelling image/graphic goes here
+                                        </div>
+                                    </div>
+                                    <div class="SA_scrollytelling-slide">
+                                        <div class="SA_scroll-text-wrapper">
+                                            <div class="SA_scroll-text">
+                                                <p>Your first scrollytelling text goes here</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="SA_scrollytelling-slide">
+                                        <div class="SA_scroll-text-wrapper">
+                                            <div class="SA_scroll-text">
+                                                <p>Your second scrollytelling text goes here</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </xmp>
+                        </p>
+                        <p>Functions inside main.js will automatically turn the above code into scrollytelling sections. You can have as many background images/graphics and slides as you want, however, the number of background images/graphics (<code>.SA_fullscreen-image</code> elements) should be the same as the number of slides (<code>.SA_scrollytelling-slide</code>).</p>
+                        <p>It will automatically show the first image when you enter the first slide, the second image on the second slide and so on.</p>
+                        <h2 class="SA_h2">Scroll triggers</h2>
+                        <p>It is possible to run a javascript function when the user enters, exits or scrolls through the scrollytelling section.</p>
+                        <p>This can be accomplished by adding data attributes to either the indidual slides <code>.SA_scrollytelling-slide</code> or the scrollytelling wrapper <code>.SA_scrollytelling-wrapper</code>.</p>
+                        <p><code>data-on-enter=""</code>: Does something when the element enters</p>
+                        <p><code>data-on-exit=""</code>: Does something when the element exits</p>
+                        <p><code>data-on-progress=""</code>: Does something as the user scrolls. The variable <code>response.progress</code> gets the current scroll percentage (from 0 to 1)</p>
+                        <h3 class="SA_h3">Scroll trigger usage</h3>
+                        <p>The <code>on-data-</code> attributes accept the name of your JS function and any number of strings to pass to your function.</p>
+                        <p>For example:</p>
+                        <code>data-on-enter="changeColour, red"</code>
+                        <p>And in your custom.js file</p>
+                        <code>function changeColour(red){//do stuff}</code>
+                        <p>Your first string must be the name of your funtion without parenthesis. After that you can pass any number of strings for your function seperated by commas i.e. (red, blue, a longer string, 1234).</p>
+                        <p>You can only pass strings to your function. No variable, arrays or other functions. If you want to pass numbers you will have to pass it as a string then convert it to a number in your function using <code>Number()</code></p>
+                        <h3 class="SA_h3">Scroll trigger example</h3>
+                        <xmp>
+                            <div class="SA_scrollytelling-slide" data-on-enter="changeSquareColour, red">
+                                <div class="SA_scroll-text-wrapper">
+                                    <div class="SA_scroll-text">
+                                        <p>Slide text</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </xmp>
+                        <p>See this example for scroll trigger use</p>
+                        <h2 class="SA_h2">How to add multiple slides for the same background</h2>
+                        <p>There will be cases where you may want to have multiple text boxes scroll over the same background. In that case you can do one of two things:
+                            <ol>
+                                <li>Add more text elements to the same slide.
+                                    <xmp>
+                                        <div class="SA_scrollytelling-slide">
+                                            <div class="SA_scroll-text-wrapper">
+                                                <div class="SA_scroll-text">
+                                                    <p>Your first scrollytelling text goes here</p>
+                                                </div>
+                                            </div>
+                                            <div class="SA_scroll-text-wrapper">
+                                                <div class="SA_scroll-text">
+                                                    <p>Your second scrollytelling text goes here</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </xmp>
+                                </li>
+                                <li>Add multiple images with the same image
+                                    <xmp>
+                                        <div class="SA_scrollytelling-images">
+                                            <div class="SA_fullscreen-image">
+                                                <img src="image.jpg">
+                                            </div>
+                                            <div class="SA_fullscreen-image">
+                                                <img src="image.jpg">
+                                            </div>
+                                        </div>
+                                    </xmp>
+                                </li>
+                            </ol>
+                        </p>
+                        <h3 class="SA_h3">Align text left or right</h3>
+                        <p>To move the text box add the class <code>.SA_scroll-text--left</code> or <code>.SA_scroll-text--right</code> to <code>.SA_scroll-text</code>
+                            <xmp>
+                                <div class="SA_scrollytelling-slide">
+                                    <div class="SA_scroll-text-wrapper">
+                                        <div class="SA_scroll-text SA_scroll-text--right">
+                                            <p>Your right aligned text here</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </xmp>
+                        </p>
+                        <h2 class="SA_h2">Basic scrollytelling example</h2>
+                    </div>
+                </div>
+                <!-- ========================================
+                     BASIC SCROLLYTELLING EXAMPLE
+                     Standard scrollytelling with text slides over fullscreen images
+                     - Images fade in/out as user scrolls
+                     - Text boxes appear sequentially
+                     - Can align text left, center, or right
+                     Copy from .SA_scrollytelling-wrapper to closing </div>
+                     ======================================== -->
+                <div class="SA_scrollytelling-wrapper">
+                    <div class="SA_scrollytelling-images">
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-1.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-1.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-1-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-1-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-1-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-2.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-2.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-2-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-2-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-2-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-3.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-3.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-3-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-3-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-3-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text">
+                                <p>Thousands of kilometres of sewage and stormwater collection pipes run below the city of Toronto, with sanitary sewers collecting water from household drains and toilets and storm sewers collecting rainwater and snowmelt.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--right">
+                                <p>In older parts of the city sewage and stormwater flow into combined sewers – some a century old – where pressure from intense rainfall can build until the excess explodes into basements or streets.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--left">
+                                <p>On Aug. 7, 2018, city water gauges recorded up to 75 mm of rainfall in downtown areas that have combined sewers. Many of these areas were among those hardest hit by flooding.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END BASIC SCROLLYTELLING EXAMPLE -->
+                
+                <div class="SA_text-grid">
+                    <div class="SA_text-wrap">
+                        <h1 class="SA_h1">Snap scrollytelling</h1>
+                        <p>You can make the slides snap by adding <code>SA_scrollytelling-wrapper--snap</code> to the <code>SA_scrollytelling-wrapper</code> element</p>
+                        <h2 class="SA_h2">Snap scrollytelling example</h2>
+                    </div>
+                </div>
+                <!-- ========================================
+                     SNAP SCROLLYTELLING EXAMPLE
+                     Scrollytelling with snap behavior - slides snap into place
+                     Includes: SA_scrollytelling-wrapper--snap class
+                     Optional: SA_scrollytelling-wrapper--scroll-in (no fade effect)
+                     Copy from .SA_scrollytelling-wrapper to closing </div>
+                     ======================================== -->
+                <div class="SA_scrollytelling-wrapper SA_scrollytelling-wrapper--side-by-side SA_scrollytelling-wrapper--snap SA_scrollytelling-wrapper--scroll-in">
+                    <div class="SA_scrollytelling-images">
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-1.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-1.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-1-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-1-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-1-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-2.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-2.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-2-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-2-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-2-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <picture>
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-3.webp" type="image/webp" />
+                                <source media="(min-width: 600px)" data-src="images/graphics/sewage-map-3.png" type="image/png" />
+                                <source data-src="images/graphics/sewage-map-3-m.webp" type="image/webp" />
+                                <source data-src="images/graphics/sewage-map-3-m.png" type="image/png" />
+                                <img loading="lazy" aria-hidden="true" data-src="images/graphics/sewage-map-3-m.png" alt="Alt tag" />
+                            </picture>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--right">
+                                <p>In older parts of the city sewage and stormwater flow into combined sewers – some a century old – where pressure from intense rainfall can build until the excess explodes into basements or streets.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--right">
+                                <p>In older parts of the city sewage and stormwater flow into combined sewers – some a century old – where pressure from intense rainfall can build until the excess explodes into basements or streets.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--right">
+                                <p>In older parts of the city sewage and stormwater flow into combined sewers – some a century old – where pressure from intense rainfall can build until the excess explodes into basements or streets.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text SA_scroll-text--right">
+                                <p>On Aug. 7, 2018, city water gauges recorded up to 75 mm of rainfall in downtown areas that have combined sewers. Many of these areas were among those hardest hit by flooding.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END SNAP SCROLLYTELLING EXAMPLE -->
+                
+                <div class="SA_text-grid">
+                    <div class="SA_text-wrap">
+                        <h1 class="SA_h1">Single background scrollytelling</h1>
+                        <p>You may want to just have one element in the background (like a d3.js chart) that you change with javascript as the user scrolls using the <code>data-on-</code> attributes.</p>
+                        <p>For that to work just add the <code>.SA_scrollytelling-wrapper--single-bg</code> class to <code>.SA_scrollytelling-wrapper</code> and add the background image/chart as the only <code>.SA_fullscreen-image</code> element.</p>
+                        <h2 class="SA_h2">Single background scrollytelling example</h2>
+                    </div>
+                </div>
+                <!-- ========================================
+                     SINGLE BACKGROUND SCROLLYTELLING EXAMPLE
+                     One persistent background (e.g., D3 chart) that updates with JavaScript
+                     Uses data-on-enter, data-on-exit, data-on-progress attributes
+                     Perfect for interactive visualizations that change as user scrolls
+                     Copy from .SA_scrollytelling-wrapper to closing </div>
+                     ======================================== -->
+                <div class="SA_scrollytelling-wrapper SA_scrollytelling-wrapper--scroll-in SA_scrollytelling-wrapper--single-bg" data-on-enter="wrapperEnterCallback" data-on-exit="wrapperExitCallback" data-on-progress="wrapperProgressCallback">
+                    <div class="SA_scrollytelling-images">
+                        <div class="SA_fullscreen-image SA_fullscreen-image--contain">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width:200px; height: 200px; background:red" id="SA_coloured-square"></div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide" data-on-enter="changeSquareColour, red">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text">
+                                <p>If you want just a single background that you can change on each slide with js add the class .SA_scrollytelling-wrapper--single-bg to .SA_scrollytelling-wrapper. Then you shoul add only one div with the class .SA_fullscreen-image</p>
+                                <p>If you dont want the slide to fade in at the start and out at the end add .SA_scrollytelling-wrapper--scroll-in to .SA_scrollytelling-wrapper</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide" data-on-enter="changeSquareColour, green" data-on-exit="changeSquareColour, #663399">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text">
+                                <p>To change the background slide when a slide enters add data-on-enter="YOUR JS FUNCTION NAME HERE" to the .SA_scrollytelling-slide element. In this case it turns green on enter</p>
+                                <p>You can also use data-on-exit to do stuff when the slide leaves the screen. In this case it turns purple</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SA_scrollytelling-slide" data-on-progress="progressFunction">
+                        <div class="SA_scroll-text-wrapper">
+                            <div class="SA_scroll-text">
+                                <p>You can also do stuff on progress with data-on-progress. Use the response.progress variable to get the current scroll percentage (from 0 to 1)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END SINGLE BACKGROUND SCROLLYTELLING EXAMPLE -->
+                
+                <!-- ========================================
+                     LAYOUT AND TYPOGRAPHY SECTION
+                     Examples of image layouts, grids, and formatting
+                     ======================================== -->
+                <div class="SA_after-scrollytelling-fix">
+                    <div class="SA_text-grid">
+                        <div class="SA_text-wrap">
+                            <h1 class="SA_h1">Layout and typograhy</h1>
+                            <h2 class="SA_h2">Images</h2>
+                            <ul>
+                                <li>Use the picture tag below for images. This ensures that the image will lazyload and that the proper size/compression will be used.<br>Replace all three instances of <code>YOUR-IMAGE-NAME</code> with your image name but leave the file extension. If you want to use a differnt file extension change both instances of jpg and remember to change <code>type="image/jpeg"</code> as well.<br>
+                                    <xmp style="overflow: hidden;">
+                                        <picture>
+                                            <source data-src="images/YOUR-IMAGE-NAME.webp" type="image/webp" />
+                                            <source data-src="images/YOUR-IMAGE-NAME.jpg" type="image/jpeg" />
+                                            <img loading="lazy" data-src="images/YOUR-IMAGE-NAME.jpg" alt="Alt tag" />
+                                        </picture>
+                                    </xmp>
+                                </li>
+                                <li>Use the highest quality image availible. The image will be compressed automatically.
+                                </li>
+                                <li>
+                                    Any jpg or png placed in the /images folder will be compressed and exported at various widths (2480px, 1920px, 1280px, 1024px, 860px, 540px and 320px). Each image in the dist folder will have the width appended to the filename. Example: milliken-park-320w.jpg is 320px wide.
+                                </li>
+                                <li>You can put non-image files in the /images folder. They will be copied over without compression
+                                </li>
+                            </ul>
+                            <h3 class="SA_h3">Image zoom and animation</h3>
+                            <ul>
+                                <li>There are several classes you can add to your img tag:</li>
+                                <ul>
+                                    <li><code></code>: Clicking on the image will zoom in</li>
+                                    <li><code>SA_animate</code>: Plays an animation when the image comes into view. Must be combined with another class to pick the animation type. Predefined options are: <code>SA_fadeIn</code>, <code>SA_slideInLeft</code>, <code>SA_slideInRight</code>, <code>SA_blurIn</code>, <code>SA_grow</code> or you can make your own. Any element with <code>SA_animate</code> will get the class <code>SA_active</code> when it comes into view. You can use this to create your own animations.</li>
+                                </ul>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- ========================================
+                         FULL WIDTH IMAGE EXAMPLE
+                         14-column full width image with grey background
+                         Includes caption with description and credit
+                         ======================================== -->
+                    <div class="SA_flex-grid SA_image-container">
+                        <div class="SA_col SA_col--14">
+                            <div class="SA_image-grey-bg">
+                                <picture>
+                                    <source data-src="images/DuBois.webp" type="image/webp" />
+                                    <source data-src="images/DuBois.jpg" type="image/jpeg" />
+                                    <img loading="lazy" data-src="images/DuBois.jpg" alt="Alt tag" />
+                                </picture>
+                            </div>
+                            <div class="SA_caption-left-flush">
+                                <span class="SA_caption__description">This is an example of an image caption</span><span class="SA_caption__credit">Pierre Dunnigan/Makivik</span></div>
+                            <div class="SA_text-grid">
+                                <div class="SA_text-wrap">
+                                    <h2 class="SA_h2">Image layout examples</span></h2>
+                                    <p>
+                                        The image grid is a 14 column grid that uses flexbox. Each column must have the .col class and an additional class .SA_col--xx where xx is the size of the column.
+                                    </p>
+                                    <p>If you want to create blank spaces in the grid just use an empty column div. On mobile the columns will be stacked and empty columns will be ignored. An example image layout is below.</p>
+                                </div>
+                            </div>
+                            <!-- ========================================
+                                 TWO COLUMN IMAGE GRID
+                                 Two equal width images side by side (7 columns each)
+                                 ======================================== -->
+                            <div class="SA_flex-grid SA_image-container">
+                                <div class="SA_col SA_col--7">
+                                    <picture>
+                                        <source data-src="images/milliken-park.webp" type="image/webp" />
+                                        <source data-src="images/milliken-park.jpg" type="image/jpeg" />
+                                        <img loading="lazy" data-src="images/milliken-park.jpg" alt="Alt tag" />
+                                    </picture>
+                                </div>
+                                <div class="SA_col SA_col--7">
+                                    <picture>
+                                        <source data-src="images/milliken-park.webp" type="image/webp" />
+                                        <source data-src="images/milliken-park.jpg" type="image/jpeg" />
+                                        <img loading="lazy" data-src="images/milliken-park.jpg" alt="Alt tag" />
+                                    </picture>
+                                </div>
+                            </div>
+                            <!-- ========================================
+                                 COMPLEX IMAGE GRID
+                                 Mixed column widths: 4 columns, 6 columns, 2 empty, 2 columns
+                                 Empty column creates visual spacing
+                                 ======================================== -->
+                            <div class="SA_flex-grid SA_image-container">
+                                <div class="SA_col SA_col--4">
+                                    <picture>
+                                        <source data-src="images/milliken-park.webp" type="image/webp" />
+                                        <source data-src="images/milliken-park.jpg" type="image/jpeg" />
+                                        <img loading="lazy" data-src="images/milliken-park.jpg" alt="Alt tag" />
+                                    </picture>
+                                </div>
+                                <div class="SA_col SA_col--6">
+                                    <picture>
+                                        <source data-src="images/milliken-park.webp" type="image/webp" />
+                                        <source data-src="images/milliken-park.jpg" type="image/jpeg" />
+                                        <img loading="lazy" data-src="images/milliken-park.jpg" alt="Alt tag" />
+                                    </picture>
+                                </div>
+                                <div class="SA_col SA_col--2">
+                                </div>
+                                <div class="SA_col SA_col--2">
+                                    <picture>
+                                        <source data-src="images/milliken-park.webp" type="image/webp" />
+                                        <source data-src="images/milliken-park.jpg" type="image/jpeg" />
+                                        <img loading="lazy" data-src="images/milliken-park.jpg" alt="Alt tag" />
+                                    </picture>
+                                </div>
+                            </div>
+                            <div class="SA_caption-left-flush">
+                                <span class="SA_caption__description">This is an example of an image caption</span><span class="SA_caption__credit">Pierre Dunnigan/Makivik</span></div>
+                            <!-- ========================================
+                                 DEVELOPER NOTES SECTION
+                                 Technical documentation - can be removed for production
+                                 ======================================== -->
+                            <div class="SA_text-grid">
+                                <div class="SA_text-wrap">
+                                    <hr>
+                                    <h1 class="SA_h1">Notes</h1>
+                                    <ul>
+                                        <li>You can put non-image files in the /img folder. They will be copied over without compression
+                                        </li>
+                                        <li>using fileinclude you can inject html files into other html files. This makes it easier to stay orgainized without having one large html file
+                                        </li>
+                                        <li>example:
+                                            <code style="font-size: 12px">&#64;&#64;include('./chapter1.html')</code></li>
+                                    </ul>
+                                    <h2 class="SA_h2">Updating Node, NPM and packages</h2>
+                                    <p>
+                                        It is not currently recommended to update node, npm or any of the gulp packages as this can break some dependacies (Currently autoprefixer v 10.0.0 doesn't work)<br>
+                                        If you still want to update your packages use npm install -g npm-check-updates to install, then npm-check-updates to check if your dependencies have updates, and npm-check-updates -u to update your package.json versions. Then it's just npm install and it will download new versions.
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- ========================================
+                                 JAVASCRIPT LIBRARIES SECTION
+                                 Information about included JS libraries
+                                 ======================================== -->
+                            <div class="SA_after-scrollytelling-fix">
+                                <div class="SA_text-grid">
+                                    <div class="SA_text-wrap">
+                                        <h2 class="SA_h2">Included libraries</h2>
+                                        <h3 class="SA_h3">Scrollmagic</h3>
+                                        <p>Scrollbased triggers and effects use <a href="https://github.com/russellsamora/scrollama">Scrollama</a>
+                                        </p>
+                                        <h2 class="SA_h2">Adding libraries or other JS files</h2>
+                                        <p>To add librtaries or other js files put them in app/js. If you want it to be automatically combined and minified with other JS files put the link to your script at the bottom of the body.html file between <div id="insert-breaking-code"></div>If you dont want it to be merged put the link outside these comments.</p>
+                                    </div>
+                                </div>
+                            </div>

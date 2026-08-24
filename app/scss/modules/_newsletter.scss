@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 .SA_newsletter-inner-box {
     padding: 16px;
     width: 100%;
@@ -29,8 +31,8 @@
     display: flex;
     align-items: center;
     padding: 3rem 0;
-    border-top: 2px solid #232323;
-    border-bottom: 2px solid #232323;
+    border-top: 2px solid $newsletterBorder;
+    border-bottom: 2px solid $newsletterBorder;
 
     @include tablet {
         // position: absolute;
@@ -78,7 +80,7 @@
         // overflow: hidden;
 
         @include e('email-input-box') {
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid $translucentWhite;
             border-radius: 5px;
             padding: 4px 8px;
             width: 70%;
@@ -88,9 +90,9 @@
             @include e('email-input') {
                 width: 100%;
                 height: 30px;
-                background: transparent;
+                background: $transparent;
                 font-family: $displayFont;
-                color: #fff;
+                color: $white;
                 font-weight: 400;
                 font-size: 18px;
                 border: none;
@@ -103,10 +105,10 @@
 
                 margin: 0;
                 height: 40px;
-                background: rgba(255, 255, 255, 0.8);
+                background: $inputBackground;
                 border-radius: 5px;
                 font-family: $displayFont;
-                color: #000;
+                color: $black;
                 font-weight: 400;
                 font-size: 16px;
                 line-height: 1em;
@@ -116,7 +118,7 @@
                 cursor: pointer;
 
                 &:hover {
-                    background: rgba(255, 255, 255, 0.9);
+                    background: $inputHoverBackground;
                 }
             }
 

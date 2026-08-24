@@ -70,7 +70,7 @@
     display: none;
     font-weight: bold;
     text-decoration: none;
-    color: rgb(20, 20, 20);
+    color: $headerText;
 
     @include desktop {
         display: block;
@@ -164,7 +164,7 @@
         @include m('twitter') {
 
             &:hover .SA_social-links__item__icon {
-                color: #55acee;
+                color: $twitterColour;
                 opacity: 1;
             }
         }
@@ -172,7 +172,7 @@
         @include m('facebook') {
 
             &:hover .SA_social-links__item__icon {
-                color: #3b5998;
+                color: $facebookColour;
                 opacity: 1;
             }
         }

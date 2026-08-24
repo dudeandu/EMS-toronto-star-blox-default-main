@@ -15,7 +15,7 @@
 }
 
 .SA_related-container {
-    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-family: $utilityFont;
     // color: $titlecolour2;
     // font-family: $captionfont;
     text-align: center;
@@ -36,7 +36,7 @@
     }
 
     @include e('heading') {
-        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-family: $utilityFont;
         font-size: 0.875rem;
         line-height: 1em;
         margin: 0 0 3.5rem;
