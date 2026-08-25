@@ -49,12 +49,56 @@ function updateOpeningTimeline(response) {
 
     const wrapperRect = wrapper.getBoundingClientRect();
     const scrollableDistance = Math.max(1, wrapper.offsetHeight - window.innerHeight);
-    const progress = Math.max(0, Math.min(1, -wrapperRect.top / scrollableDistance));
-    timeline.style.setProperty('--timeline-offset', `${progress * -100}%`);
+    const scrolledDistance = Math.max(0, -wrapperRect.top);
+    const overallProgress = Math.max(0, Math.min(1, scrolledDistance / scrollableDistance));
+    const timelineStart = wrapper.querySelector('[data-opening-timeline-start]');
+    const timelineStartDistance = timelineStart
+        ? Math.max(0, timelineStart.offsetTop - window.innerHeight * 0.5)
+        : 0;
+    const timelineAnchors = Array.from(wrapper.querySelectorAll('[data-opening-timeline-progress]')).map(function(slide) {
+        return {
+            distance: Math.max(0, slide.offsetTop + slide.offsetHeight * 0.5 - window.innerHeight * 0.5),
+            progress: Number(slide.dataset.openingTimelineProgress)
+        };
+    });
+    let timelineProgress = 0;
+
+    if (timelineAnchors.length) {
+        const finalAnchor = timelineAnchors[timelineAnchors.length - 1];
+        const anchors = timelineAnchors.concat([{ distance: scrollableDistance, progress: 1 }]);
+
+        if (scrolledDistance >= finalAnchor.distance) {
+            const remainingDistance = Math.max(1, scrollableDistance - finalAnchor.distance);
+            const segmentProgress = (scrolledDistance - finalAnchor.distance) / remainingDistance;
+            timelineProgress = finalAnchor.progress + segmentProgress * (1 - finalAnchor.progress);
+        } else {
+            for (let index = 0; index < timelineAnchors.length - 1; index += 1) {
+                const startAnchor = anchors[index];
+                const endAnchor = anchors[index + 1];
+                if (scrolledDistance >= startAnchor.distance && scrolledDistance <= endAnchor.distance) {
+                    const segmentDistance = Math.max(1, endAnchor.distance - startAnchor.distance);
+                    const segmentProgress = (scrolledDistance - startAnchor.distance) / segmentDistance;
+                    timelineProgress = startAnchor.progress + segmentProgress * (endAnchor.progress - startAnchor.progress);
+                    break;
+                }
+            }
+        }
+    }
+
+    timelineProgress = Math.max(0, Math.min(1, timelineProgress));
+    const timelineReveal = Math.max(0, Math.min(1, (scrolledDistance - timelineStartDistance) / Math.max(1, window.innerHeight * 0.12)));
+    timeline.style.setProperty('--timeline-offset', `${timelineProgress * -100}%`);
+    timeline.style.setProperty('--timeline-opacity', String(timelineReveal));
+
+    const background = wrapper.querySelector('.SA_opening-timeline__background');
+    if (background) {
+        background.style.setProperty('--timeline-image-scale', String(1.06 + overallProgress * 0.07));
+        background.style.setProperty('--timeline-image-y', `${overallProgress * -1.5}vh`);
+    }
 
     const soundChoice = wrapper.querySelector('.SA_opening-timeline__sound-choice');
     if (soundChoice) {
-        const fadeProgress = Math.max(0, Math.min(1, (progress - 0.1) / 0.06));
+        const fadeProgress = Math.max(0, Math.min(1, (timelineProgress - 0.1) / 0.06));
         soundChoice.style.setProperty('--sound-choice-opacity', String(1 - fadeProgress));
         soundChoice.style.setProperty('--sound-choice-shift', `${fadeProgress * 1.5}rem`);
         soundChoice.style.pointerEvents = fadeProgress > 0.85 ? 'none' : 'auto';
@@ -66,7 +110,7 @@ function updateOpeningTimeline(response) {
 
     timeline.querySelectorAll('[data-timeline-point]').forEach(function(point) {
         const pointProgress = Number(point.dataset.timelinePoint);
-        point.classList.toggle('SA_opening-timeline__tick--visible', progress >= pointProgress);
+        point.classList.toggle('SA_opening-timeline__tick--visible', timelineProgress >= pointProgress);
     });
 }
 

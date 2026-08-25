@@ -108,3 +108,6 @@ app/.DS_Store
 
 # Local EMS response data and dashboard workspace
 /app/tor-ems-responses-data-and-dashboard/
+
+# Local snapshot of the app before major changes
+/app-BU/
