@@ -535,6 +535,20 @@ function initializeEmsBeeswarm() {
     let swarmLayer = document.createElement('canvas');
     let swarmLayerWidth = 0;
     const swarmLayerHeight = 7200;
+    let logarithmicLayer = document.createElement('canvas');
+    let logarithmicLayerWidth = 0;
+    let logarithmicLayerHeight = 0;
+    const maximumResponseSeconds = 8 * 3600;
+    const logarithmicConstant = 300;
+    const logarithmicStretch = 2;
+
+    function logarithmicProgress(seconds) {
+        return Math.log1p(Math.max(0, seconds) / logarithmicConstant) / Math.log1p(maximumResponseSeconds / logarithmicConstant);
+    }
+
+    function logarithmicSeconds(progress) {
+        return logarithmicConstant * (Math.exp(progress * Math.log1p(maximumResponseSeconds / logarithmicConstant)) - 1);
+    }
 
     function hashNumber(value) {
         let hash = 2166136261;
@@ -610,6 +624,51 @@ function initializeEmsBeeswarm() {
         layerContext.globalAlpha = 1;
     }
 
+    function buildLogarithmicLayer(width, height, left, right, top, bottom) {
+        const layerHeight = Math.ceil(top + (bottom - top) * logarithmicStretch);
+        if (logarithmicLayerWidth === width && logarithmicLayerHeight === layerHeight) return;
+        logarithmicLayerWidth = width;
+        logarithmicLayerHeight = layerHeight;
+        logarithmicLayer.width = width;
+        logarithmicLayer.height = layerHeight;
+        const layerContext = logarithmicLayer.getContext('2d');
+        const laneWidth = (right - left) / priorityOrder.length;
+        const dotSize = width < 600 ? 1.15 : 1.4;
+        layerContext.clearRect(0, 0, width, layerHeight);
+        layerContext.globalAlpha = 0.42;
+        calls.forEach(function(call) {
+            if (call.seconds < 0 || call.seconds > maximumResponseSeconds) return;
+            const priorityIndex = priorityOrder.indexOf(call.priority);
+            const centre = left + laneWidth * (priorityIndex + 0.5);
+            const baseY = top + logarithmicProgress(call.seconds) * (bottom - top) * logarithmicStretch;
+            layerContext.fillStyle = colours[call.priority];
+            for (let rank = 0; rank < call.count; rank += 1) {
+                const position = dotPosition(call.priority, call.seconds, call.count, rank);
+                const x = centre + position.laneOffset * laneWidth;
+                const y = baseY + position.yJitter;
+                layerContext.fillRect(x - dotSize / 2, y - dotSize / 2, dotSize, dotSize);
+            }
+        });
+        layerContext.globalAlpha = 1;
+    }
+
+    function drawMorphedLogarithmicLayer(width, top, bottom, linearScale, amount) {
+        const plotHeight = bottom - top;
+        const sourceBottom = top + plotHeight * logarithmicStretch;
+        const stripHeight = 4;
+        for (let sourceY = 0; sourceY < sourceBottom; sourceY += stripHeight) {
+            const sourceEnd = Math.min(sourceBottom, sourceY + stripHeight);
+            const startProgress = Math.max(0, (sourceY - top) / (plotHeight * logarithmicStretch));
+            const endProgress = Math.max(0, (sourceEnd - top) / (plotHeight * logarithmicStretch));
+            const startSeconds = logarithmicSeconds(startProgress);
+            const endSeconds = logarithmicSeconds(endProgress);
+            const destinationY = sourceY + (linearScale(startSeconds) - sourceY) * amount;
+            const destinationEnd = sourceEnd + (linearScale(endSeconds) - sourceEnd) * amount;
+            if (destinationEnd < top || destinationY > bottom) continue;
+            context.drawImage(logarithmicLayer, 0, sourceY, width, sourceEnd - sourceY, 0, destinationY, width, Math.max(1, destinationEnd - destinationY + 0.5));
+        }
+    }
+
     function activeState() {
         const viewportMiddle = window.innerHeight / 2;
         const centres = steps.map(function(step) {
@@ -638,9 +697,13 @@ function initializeEmsBeeswarm() {
         }
         const startSeconds = Number(steps[from].dataset.seconds);
         const endSeconds = Number(steps[to].dataset.seconds);
+        const startLinear = steps[from].dataset.mode && steps[from].dataset.mode !== 'linear' ? 0 : 1;
+        const endLinear = steps[to].dataset.mode && steps[to].dataset.mode !== 'linear' ? 0 : 1;
+        const boundedAmount = Math.max(0, Math.min(1, amount));
         return {
             step: steps[activeIndex],
-            centreSeconds: startSeconds + (endSeconds - startSeconds) * Math.max(0, Math.min(1, amount))
+            centreSeconds: startSeconds + (endSeconds - startSeconds) * boundedAmount,
+            linearAmount: startLinear + (endLinear - startLinear) * boundedAmount
         };
     }
 
@@ -740,7 +803,7 @@ function initializeEmsBeeswarm() {
         svg.setAttribute('aria-label', `${step.dataset.title}. ${step.dataset.copy}`);
         const group = svgElement('g', { class: 'SA_bees-annotation' });
         const mode = step.dataset.mode;
-        const targetStages = { 'targets-purple': 1, 'targets-red': 3, 'targets-orange': 4, 'targets-yellow': 5, means: 5, p90: 5 };
+        const targetStages = { 'targets-purple': 1, 'targets-all': 5, means: 5, p90: 5, linear: 5 };
         const targetCount = targetStages[mode] || 0;
 
         priorityOrder.forEach(function(priority, index) {
@@ -755,18 +818,20 @@ function initializeEmsBeeswarm() {
                 : index === 3 ? 'TARGET ORANGE · 25:00'
                 : 'TARGET YELLOW · 45:00';
             group.appendChild(svgElement('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'SA_bees-reference SA_bees-reference--target', stroke: colours[priority] }));
-            const text = svgElement('text', { x: centre, y: y - 7, class: 'SA_bees-reference__label', fill: colours[priority] });
+            const labelY = responseTargets[index] <= meanArrivals[index] ? y - 7 : y + 16;
+            const text = svgElement('text', { x: centre, y: labelY, class: 'SA_bees-reference__label', fill: colours[priority] });
             text.textContent = width < 600 ? label.replace(/TARGET (RED ACP|RED PCP|PURPLE|ORANGE|YELLOW)/, 'TARGET') : label;
             group.appendChild(text);
         });
 
-        if (mode === 'means' || mode === 'p90') {
+        if (mode === 'means' || mode === 'p90' || mode === 'linear') {
             priorityOrder.forEach(function(priority, index) {
                 const centre = left + laneWidth * (index + 0.5);
                 const x1 = centre - laneWidth * 0.43;
                 const x2 = centre + laneWidth * 0.43;
                 const y = yScale(meanArrivals[index]);
-                const text = svgElement('text', { x: centre, y: y + 13, class: 'SA_bees-reference__label SA_bees-reference__label--mean', fill: colours[priority] });
+                const labelY = meanArrivals[index] <= responseTargets[index] ? y - 7 : y + 16;
+                const text = svgElement('text', { x: centre, y: labelY, class: 'SA_bees-reference__label SA_bees-reference__label--mean', fill: colours[priority] });
                 group.appendChild(svgElement('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'SA_bees-reference SA_bees-reference--mean', stroke: colours[priority] }));
                 text.textContent = `AVERAGE · ${formatDuration(meanArrivals[index])}`;
                 group.appendChild(text);
@@ -790,9 +855,15 @@ function initializeEmsBeeswarm() {
         const visibleSpan = width < 600 ? 7200 : 5400;
         const minSeconds = Math.max(0, Math.min(8 * 3600 - visibleSpan, state.centreSeconds - visibleSpan / 2));
         const maxSeconds = minSeconds + visibleSpan;
-        const yScale = function(seconds) { return top + ((seconds - minSeconds) / visibleSpan) * (bottom - top); };
+        const linearScale = function(seconds) { return top + ((seconds - minSeconds) / visibleSpan) * (bottom - top); };
+        const logScale = function(seconds) { return top + logarithmicProgress(seconds) * (bottom - top) * logarithmicStretch; };
+        const morphAmount = state.linearAmount * state.linearAmount * (3 - 2 * state.linearAmount);
+        const yScale = function(seconds) {
+            return logScale(seconds) + (linearScale(seconds) - logScale(seconds)) * morphAmount;
+        };
 
         buildSwarmLayer(width, left, right);
+        buildLogarithmicLayer(width, height, left, right, top, bottom);
         if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
@@ -814,13 +885,22 @@ function initializeEmsBeeswarm() {
             context.fillText(priority.replace(/^\d-/, '').replace(/ \(.+/, ''), centre, 62);
         });
 
-        const sourceY = (minSeconds / (8 * 3600)) * swarmLayerHeight;
-        const sourceHeight = (visibleSpan / (8 * 3600)) * swarmLayerHeight;
-        context.drawImage(swarmLayer, 0, sourceY, width, sourceHeight, 0, top, width, bottom - top);
+        const sourceY = (minSeconds / maximumResponseSeconds) * swarmLayerHeight;
+        const sourceHeight = (visibleSpan / maximumResponseSeconds) * swarmLayerHeight;
+        if (morphAmount < 1) {
+            drawMorphedLogarithmicLayer(width, top, bottom, linearScale, morphAmount);
+        } else {
+            context.drawImage(swarmLayer, 0, sourceY, width, sourceHeight, 0, top, width, bottom - top);
+        }
 
-        const tickStart = Math.ceil(minSeconds / 900) * 900;
-        for (let seconds = tickStart; seconds <= maxSeconds; seconds += 900) {
+        const logarithmicTicks = [0, 900, 1800, 2700, 3600, 5400, 7200, 14400, maximumResponseSeconds];
+        const linearTickStart = Math.ceil(minSeconds / 900) * 900;
+        const linearTicks = [];
+        for (let seconds = linearTickStart; seconds <= maxSeconds; seconds += 900) linearTicks.push(seconds);
+        const tickValues = state.linearAmount < 0.5 ? logarithmicTicks : linearTicks;
+        tickValues.forEach(function(seconds) {
             const y = yScale(seconds);
+            if (y < top || y > bottom) return;
             context.strokeStyle = seconds % 3600 === 0 ? 'rgba(255,255,255,0.24)' : 'rgba(255,255,255,0.1)';
             context.beginPath();
             context.moveTo(left, y);
@@ -829,7 +909,7 @@ function initializeEmsBeeswarm() {
             context.fillStyle = 'rgba(255,255,255,0.72)';
             context.textAlign = 'right';
             context.fillText(formatDuration(seconds), left - 6, y);
-        }
+        });
 
         if (state.step.dataset.mode) {
             drawReferenceOverlay(state.step, width, height, left, laneWidth, yScale);
@@ -875,6 +955,7 @@ function initializeEmsBeeswarm() {
             calls = parseCalls(csv);
             groupsByKey = new Map(calls.map(function(call) { return [`${call.priority}|${call.seconds}`, call]; }));
             swarmLayerWidth = 0;
+            logarithmicLayerWidth = 0;
             draw();
         })
         .catch(function(error) {
@@ -887,6 +968,535 @@ function initializeEmsBeeswarm() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEmsBeeswarm);
+
+// Supporting EMS data graphics
+
+function initializeEmsDataCharts() {
+    const figures = Array.from(document.querySelectorAll('[data-ems-chart]'));
+    if (!figures.length) return;
+
+    const files = {
+        targets: 'images/data/slow_response_by_priority.csv',
+        emergencies: 'images/data/response_time_by_problem_and_priority.csv',
+        escalation: 'images/data/priority_escalation_summary.csv',
+        trends: 'images/data/response_time_trend_by_priority.csv',
+        availability: 'images/data/ambulance_availability.csv',
+        hourly: 'images/data/response_time_by_hour.csv',
+        staffing: 'images/data/paramedic_hiring_departures.csv',
+        hospital: 'images/data/paramedic_shift_time.csv'
+    };
+    const data = {};
+    let resizeTimer;
+
+    function parseCsv(csv) {
+        const rows = [];
+        let row = [];
+        let value = '';
+        let quoted = false;
+
+        for (let index = 0; index < csv.length; index += 1) {
+            const character = csv[index];
+            const nextCharacter = csv[index + 1];
+            if (character === '"' && quoted && nextCharacter === '"') {
+                value += '"';
+                index += 1;
+            } else if (character === '"') {
+                quoted = !quoted;
+            } else if (character === ',' && !quoted) {
+                row.push(value);
+                value = '';
+            } else if ((character === '\n' || character === '\r') && !quoted) {
+                if (character === '\r' && nextCharacter === '\n') index += 1;
+                row.push(value);
+                if (row.some(function(cell) { return cell !== ''; })) rows.push(row);
+                row = [];
+                value = '';
+            } else {
+                value += character;
+            }
+        }
+        if (value || row.length) {
+            row.push(value);
+            rows.push(row);
+        }
+
+        const headers = rows.shift() || [];
+        return rows.map(function(values) {
+            return Object.fromEntries(headers.map(function(header, index) {
+                return [header, values[index]];
+            }));
+        });
+    }
+
+    function svgNode(name, attributes, textContent) {
+        const node = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.entries(attributes || {}).forEach(function(entry) { node.setAttribute(entry[0], entry[1]); });
+        if (textContent !== undefined) node.textContent = textContent;
+        return node;
+    }
+
+    function addText(svg, x, y, textContent, attributes) {
+        const text = svgNode('text', Object.assign({ x: x, y: y }, attributes || {}), textContent);
+        svg.appendChild(text);
+        return text;
+    }
+
+    function chartPalette(figure) {
+        const styles = getComputedStyle(figure);
+        return {
+            priorities: {
+                '0-PURPLE': styles.getPropertyValue('--chart-purple').trim(),
+                '1-RED (ACP)': styles.getPropertyValue('--chart-red-acp').trim(),
+                '2-RED (PCP)': styles.getPropertyValue('--chart-red-pcp').trim(),
+                '3-ORANGE': styles.getPropertyValue('--chart-orange').trim(),
+                '4-YELLOW': styles.getPropertyValue('--chart-yellow').trim()
+            },
+            white: styles.getPropertyValue('--chart-white').trim(),
+            muted: styles.getPropertyValue('--chart-muted').trim(),
+            grid: styles.getPropertyValue('--chart-grid').trim()
+        };
+    }
+
+    function createSvg(mount, height) {
+        const width = Math.max(320, Math.round(mount.getBoundingClientRect().width));
+        const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, 'aria-hidden': 'true' });
+        mount.replaceChildren(svg);
+        return { svg: svg, width: width, height: height };
+    }
+
+    function bindChartTooltip(node, mount, label, guide) {
+        node.setAttribute('data-chart-tooltip', 'true');
+        node.setAttribute('tabindex', '0');
+        node.setAttribute('aria-label', label);
+
+        function tooltip() {
+            let element = mount.querySelector('.SA_ems-data-chart__tooltip');
+            if (!element) {
+                element = document.createElement('div');
+                element.className = 'SA_ems-data-chart__tooltip';
+                element.setAttribute('role', 'tooltip');
+                mount.appendChild(element);
+            }
+            return element;
+        }
+
+        function show(clientX, clientY) {
+            const element = tooltip();
+            const bounds = mount.getBoundingClientRect();
+            const x = Math.max(16, Math.min(bounds.width - 16, clientX - bounds.left));
+            const y = Math.max(18, clientY - bounds.top);
+            element.textContent = label;
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.classList.toggle('SA_ems-data-chart__tooltip--left', x > bounds.width / 2);
+            element.classList.toggle('SA_ems-data-chart__tooltip--right', x <= bounds.width / 2);
+            element.classList.add('SA_ems-data-chart__tooltip--visible');
+            if (guide) {
+                guide.node.setAttribute('x1', guide.x);
+                guide.node.setAttribute('x2', guide.x);
+                guide.node.setAttribute('opacity', '1');
+            }
+        }
+
+        function hide() {
+            const element = mount.querySelector('.SA_ems-data-chart__tooltip');
+            if (element) element.classList.remove('SA_ems-data-chart__tooltip--visible');
+            if (guide) guide.node.setAttribute('opacity', '0');
+        }
+
+        node.addEventListener('pointerenter', function(event) { show(event.clientX, event.clientY); });
+        node.addEventListener('pointermove', function(event) { show(event.clientX, event.clientY); });
+        node.addEventListener('pointerleave', hide);
+        node.addEventListener('pointerdown', function(event) { show(event.clientX, event.clientY); });
+        node.addEventListener('focus', function() {
+            const bounds = node.getBoundingClientRect();
+            show(bounds.left + bounds.width / 2, bounds.top);
+        });
+        node.addEventListener('blur', hide);
+    }
+
+    function shortPriority(priority) {
+        return ({
+            '0-PURPLE': 'Purple',
+            '1-RED (ACP)': 'Red ACP',
+            '2-RED (PCP)': 'Red PCP',
+            '3-ORANGE': 'Orange',
+            '4-YELLOW': 'Yellow'
+        })[priority] || priority;
+    }
+
+    function renderTargets(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const compact = mount.getBoundingClientRect().width < 540;
+        const chart = createSvg(mount, compact ? 420 : 390);
+        const left = compact ? 88 : 126;
+        const right = chart.width - 48;
+        const top = 54;
+        const rowGap = 62;
+
+        [0, 25, 50, 75, 100].forEach(function(value) {
+            const x = left + (right - left) * value / 100;
+            chart.svg.appendChild(svgNode('line', { x1: x, x2: x, y1: top - 20, y2: top + rowGap * 4 + 22, stroke: palette.grid, 'stroke-opacity': value === 0 ? 0.45 : 0.18 }));
+            addText(chart.svg, x, top - 28, `${value}%`, { fill: palette.muted, 'font-size': 10, 'text-anchor': 'middle' });
+        });
+
+        rows.forEach(function(row, index) {
+            const y = top + index * rowGap;
+            const rate = Number(row['Slow Rate (%)']);
+            const barWidth = (right - left) * rate / 100;
+            addText(chart.svg, left - 12, y + 5, shortPriority(row['Final Priority']), { fill: palette.white, 'font-size': compact ? 11 : 13, 'font-weight': 800, 'text-anchor': 'end' });
+            chart.svg.appendChild(svgNode('rect', { x: left, y: y - 12, width: right - left, height: 24, rx: 2, fill: palette.white, 'fill-opacity': 0.1 }));
+            const bar = svgNode('rect', { x: left, y: y - 12, width: barWidth, height: 24, rx: 2, fill: palette.priorities[row['Final Priority']] });
+            chart.svg.appendChild(bar);
+            bindChartTooltip(bar, mount, `${shortPriority(row['Final Priority'])}: ${rate.toFixed(1)}% missed the ${row['Threshold Applied']} response goal (${Number(row.Slow).toLocaleString()} of ${Number(row.Total).toLocaleString()} calls).`);
+            addText(chart.svg, Math.min(right - 2, left + barWidth + 8), y + 5, `${rate.toFixed(1)}%`, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': left + barWidth + 52 > right ? 'end' : 'start' });
+        });
+    }
+
+    function renderEmergencies(figure, rows) {
+        const selected = ['Choking', 'STEMI-Unstable', 'STROKE - Stable', 'STROKE - Unstable', 'Stroke (CVA)'];
+        const labels = { 'STEMI-Unstable': 'Unstable heart attack', 'STROKE - Stable': 'Stable stroke', 'STROKE - Unstable': 'Unstable stroke', 'Stroke (CVA)': 'CVA stroke' };
+        const values = selected.map(function(problem) {
+            return rows.find(function(row) { return row['Problem (Short)'] === problem && row['Final Priority'] === 'Life threatening'; });
+        }).filter(Boolean);
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const compact = mount.getBoundingClientRect().width < 540;
+        const chart = createSvg(mount, compact ? 480 : 440);
+        const left = compact ? 132 : 190;
+        const right = chart.width - 34;
+        const top = 72;
+        const bottom = chart.height - 48;
+        const maximum = 22;
+
+        [0, 5, 10, 15, 20].forEach(function(minutes) {
+            const x = left + (right - left) * minutes / maximum;
+            chart.svg.appendChild(svgNode('line', { x1: x, x2: x, y1: top - 24, y2: bottom, stroke: palette.grid, 'stroke-opacity': minutes === 0 ? 0.45 : 0.18 }));
+            addText(chart.svg, x, bottom + 26, `${minutes} min`, { fill: palette.muted, 'font-size': 10, 'text-anchor': 'middle' });
+        });
+        addText(chart.svg, right, 24, '90th percentile', { fill: palette.muted, 'font-size': 10, 'text-anchor': 'end' });
+
+        values.forEach(function(row, index) {
+            const y = top + index * ((bottom - top) / Math.max(1, values.length - 1));
+            const median = Number(row['Median (sec)']) / 60;
+            const p90 = Number(row['P90 (sec)']) / 60;
+            const medianX = left + (right - left) * median / maximum;
+            const p90X = left + (right - left) * Math.min(maximum, p90) / maximum;
+            addText(chart.svg, left - 12, y + 4, labels[row['Problem (Short)']] || row['Problem (Short)'], { fill: palette.white, 'font-size': compact ? 10 : 12, 'font-weight': 700, 'text-anchor': 'end' });
+            chart.svg.appendChild(svgNode('line', { x1: medianX, x2: p90X, y1: y, y2: y, stroke: palette.white, 'stroke-width': 2, 'stroke-opacity': 0.65 }));
+            const medianPoint = svgNode('circle', { cx: medianX, cy: y, r: 6, fill: palette.white });
+            const p90Point = svgNode('circle', { cx: p90X, cy: y, r: 8, fill: palette.priorities['1-RED (ACP)'], stroke: palette.white, 'stroke-width': 1.5 });
+            chart.svg.appendChild(medianPoint);
+            chart.svg.appendChild(p90Point);
+            const problemLabel = labels[row['Problem (Short)']] || row['Problem (Short)'];
+            bindChartTooltip(medianPoint, mount, `${problemLabel}: median response ${median.toFixed(1)} minutes across ${Number(row.Count).toLocaleString()} life-threatening calls.`);
+            bindChartTooltip(p90Point, mount, `${problemLabel}: 90th-percentile response ${p90.toFixed(1)} minutes; one in 10 calls took longer.`);
+            addText(chart.svg, p90X, y - 12, `${p90.toFixed(1)} min`, { fill: palette.white, 'font-size': 10, 'font-weight': 800, 'text-anchor': p90X > right - 42 ? 'end' : 'middle' });
+        });
+        chart.svg.appendChild(svgNode('circle', { cx: left, cy: 24, r: 4, fill: palette.white }));
+        addText(chart.svg, left + 10, 28, 'Median', { fill: palette.muted, 'font-size': 10 });
+    }
+
+    function renderEscalation(figure, rows) {
+        const known = rows.filter(function(row) { return row['Priority Direction'] !== 'Unknown'; });
+        const total = known.reduce(function(sum, row) { return sum + Number(row.Count); }, 0);
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const chart = createSvg(mount, 230);
+        const left = 18;
+        const right = chart.width - 18;
+        const y = 62;
+        const barHeight = 52;
+        const colours = { Escalated: palette.priorities['1-RED (ACP)'], 'De-escalated': palette.priorities['4-YELLOW'], Unchanged: palette.muted };
+        let x = left;
+
+        known.forEach(function(row) {
+            const share = Number(row.Count) / total;
+            const width = (right - left) * share;
+            const segment = svgNode('rect', { x: x, y: y, width: width, height: barHeight, fill: colours[row['Priority Direction']] });
+            chart.svg.appendChild(segment);
+            bindChartTooltip(segment, mount, `${row['Priority Direction']}: ${(share * 100).toFixed(1)}% of calls with an initial priority available (${Number(row.Count).toLocaleString()} calls).`);
+            if (width > 54) addText(chart.svg, x + width / 2, y + 32, `${(share * 100).toFixed(1)}%`, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': 'middle' });
+            x += width;
+        });
+
+        known.forEach(function(row, index) {
+            const legendX = left + index * ((right - left) / known.length);
+            chart.svg.appendChild(svgNode('circle', { cx: legendX + 5, cy: 153, r: 5, fill: colours[row['Priority Direction']] }));
+            addText(chart.svg, legendX + 16, 157, row['Priority Direction'], { fill: palette.white, 'font-size': chart.width < 540 ? 9 : 11, 'font-weight': 700 });
+            addText(chart.svg, legendX + 16, 177, `${Number(row.Count).toLocaleString()} calls`, { fill: palette.muted, 'font-size': 9 });
+        });
+    }
+
+    function renderAvailability(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const compact = mount.getBoundingClientRect().width < 540;
+        const chart = createSvg(mount, figure.classList.contains('SA_ems-data-chart--float') ? 290 : (compact ? 330 : 300));
+        const left = compact ? 126 : 230;
+        const right = chart.width - 34;
+        const top = 55;
+        const maximum = 7000;
+        const measures = Array.from(new Set(rows.map(function(row) { return row.Measure; })));
+        const yearColours = { '2019': palette.muted, '2023': palette.priorities['1-RED (ACP)'] };
+
+        [0, 2000, 4000, 6000].forEach(function(value) {
+            const x = left + (right - left) * value / maximum;
+            chart.svg.appendChild(svgNode('line', { x1: x, x2: x, y1: top - 24, y2: chart.height - 35, stroke: palette.grid, 'stroke-opacity': value ? 0.18 : 0.45 }));
+            addText(chart.svg, x, 24, value ? `${value / 1000}k` : '0', { fill: palette.white, 'font-size': 11, 'text-anchor': 'middle' });
+        });
+
+        measures.forEach(function(measure, measureIndex) {
+            const baseY = top + measureIndex * 112;
+            addText(chart.svg, left - 12, baseY + 23, compact && measure.startsWith('Low') ? 'Low availability' : compact && measure.startsWith('No') ? 'None available' : measure, { fill: palette.white, 'font-size': compact ? 10 : 12, 'font-weight': 800, 'text-anchor': 'end' });
+            rows.filter(function(row) { return row.Measure === measure; }).forEach(function(row, yearIndex) {
+                const y = baseY + yearIndex * 34;
+                const width = (right - left) * Number(row.Count) / maximum;
+                addText(chart.svg, left - 12, y + 5, row.Year, { fill: palette.white, 'font-size': 10, 'text-anchor': 'end' });
+                const bar = svgNode('rect', { x: left, y: y - 10, width: Math.max(2, width), height: 20, fill: yearColours[row.Year], rx: 2 });
+                chart.svg.appendChild(bar);
+                addText(chart.svg, Math.min(right, left + width + 8), y + 5, Number(row.Count).toLocaleString(), { fill: palette.white, 'font-size': 11, 'font-weight': 800, 'text-anchor': left + width + 48 > right ? 'end' : 'start' });
+                bindChartTooltip(bar, mount, `${measure}, ${row.Year}: ${Number(row.Count).toLocaleString()} incidents.`);
+            });
+        });
+    }
+
+    function renderStaffing(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const chart = createSvg(mount, figure.classList.contains('SA_ems-data-chart--float') ? 260 : 290);
+        const left = 48;
+        const right = chart.width - 24;
+        const top = 32;
+        const bottom = 225;
+        const maximum = 180;
+        const groupWidth = (right - left) / rows.length;
+        const colours = { Hired: palette.priorities['4-YELLOW'], Departed: palette.priorities['1-RED (ACP)'] };
+
+        [0, 50, 100, 150].forEach(function(value) {
+            const y = bottom - (bottom - top) * value / maximum;
+            chart.svg.appendChild(svgNode('line', { x1: left, x2: right, y1: y, y2: y, stroke: palette.grid, 'stroke-opacity': value ? 0.18 : 0.45 }));
+            addText(chart.svg, left - 8, y + 4, value, { fill: palette.white, 'font-size': 11, 'text-anchor': 'end' });
+        });
+
+        rows.forEach(function(row, groupIndex) {
+            const center = left + groupWidth * (groupIndex + 0.5);
+            ['Hired', 'Departed'].forEach(function(key, index) {
+                const value = Number(row[key]);
+                const width = Math.min(54, groupWidth * 0.28);
+                const x = center + (index - 1) * (width + 5) + 5;
+                const y = bottom - (bottom - top) * value / maximum;
+                const bar = svgNode('rect', { x: x, y: y, width: width, height: bottom - y, fill: colours[key], rx: 2 });
+                chart.svg.appendChild(bar);
+                addText(chart.svg, x + width / 2, y - 9, value, { fill: palette.white, 'font-size': 11, 'font-weight': 800, 'text-anchor': 'middle' });
+                bindChartTooltip(bar, mount, `${row.Year}: ${value} paramedics ${key.toLowerCase()}. Net staffing gain: ${Number(row.Net)}.`);
+            });
+            addText(chart.svg, center, bottom + 26, row.Year, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': 'middle' });
+        });
+    }
+
+    function renderHospital(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const chart = createSvg(mount, figure.classList.contains('SA_ems-data-chart--float') ? 270 : 310);
+        const cellSize = Math.min(32, (chart.width - 70) / 10);
+        const gap = 5;
+        const gridWidth = cellSize * 10 + gap * 9;
+        const startX = (chart.width - gridWidth) / 2;
+        const startY = 40;
+        const hospitalShare = Number((rows.find(function(row) { return row.Activity === 'In hospital'; }) || {})['Share (%)']);
+
+        for (let index = 0; index < 100; index += 1) {
+            const hospital = index < hospitalShare;
+            const x = startX + (index % 10) * (cellSize + gap);
+            const y = startY + Math.floor(index / 10) * (cellSize / 2 + gap);
+            const cell = svgNode('rect', { x: x, y: y, width: cellSize, height: cellSize / 2, rx: 2, fill: hospital ? palette.priorities['1-RED (ACP)'] : palette.white, 'fill-opacity': hospital ? 1 : 0.22 });
+            chart.svg.appendChild(cell);
+            bindChartTooltip(cell, mount, hospital ? '60% of an average paramedic shift is spent in hospital.' : '40% remains for travel, on-scene response and other duties.');
+        }
+        addText(chart.svg, chart.width / 2, chart.height - 12, '60% spent in hospital', { fill: palette.white, 'font-size': 15, 'font-weight': 800, 'text-anchor': 'middle' });
+    }
+
+    function renderHourly(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const legend = figure.querySelector('[data-chart-legend]');
+        const palette = chartPalette(figure);
+        const compact = mount.getBoundingClientRect().width < 540;
+        const chart = createSvg(mount, figure.classList.contains('SA_ems-data-chart--float') ? 330 : (compact ? 430 : 500));
+        const left = compact ? 48 : 62;
+        const right = chart.width - (compact ? 48 : 62);
+        const top = 34;
+        const bottom = chart.height - 58;
+        const maxCalls = 18000;
+        const maxMinutes = 70;
+        const callColour = palette.priorities['4-YELLOW'];
+        const timeColour = palette.priorities['1-RED (ACP)'];
+
+        legend.replaceChildren();
+        [['Calls received', callColour], ['P90 response', timeColour]].forEach(function(item) {
+            const span = document.createElement('span');
+            const dot = document.createElement('i');
+            dot.style.background = item[1];
+            span.append(dot, document.createTextNode(item[0]));
+            legend.appendChild(span);
+        });
+
+        [0, 20, 40, 60].forEach(function(minutes) {
+            const y = bottom - (bottom - top) * minutes / maxMinutes;
+            chart.svg.appendChild(svgNode('line', { x1: left, x2: right, y1: y, y2: y, stroke: palette.grid, 'stroke-opacity': minutes ? 0.18 : 0.45 }));
+            addText(chart.svg, right + 8, y + 4, `${minutes}m`, { fill: palette.white, 'font-size': 10 });
+            addText(chart.svg, left - 8, y + 4, `${Math.round(maxCalls * minutes / maxMinutes / 1000)}k`, { fill: palette.white, 'font-size': 10, 'text-anchor': 'end' });
+        });
+        addText(chart.svg, left, 17, 'Calls', { fill: palette.white, 'font-size': 10 });
+        addText(chart.svg, right, 17, 'P90 minutes', { fill: palette.white, 'font-size': 10, 'text-anchor': 'end' });
+
+        const callPoints = [];
+        const timePoints = [];
+        rows.forEach(function(row, index) {
+            const x = left + (right - left) * index / Math.max(1, rows.length - 1);
+            const callsY = bottom - (bottom - top) * Number(row.Count) / maxCalls;
+            const minutes = Number(row['P90 (sec)']) / 60;
+            const timeY = bottom - (bottom - top) * minutes / maxMinutes;
+            callPoints.push(`${x},${callsY}`);
+            timePoints.push(`${x},${timeY}`);
+            if (index % 3 === 0) addText(chart.svg, x, bottom + 25, `${String(index).padStart(2, '0')}:00`, { fill: palette.white, 'font-size': 10, 'text-anchor': 'middle' });
+        });
+        chart.svg.appendChild(svgNode('polyline', { points: callPoints.join(' '), fill: 'none', stroke: callColour, 'stroke-width': 3, 'stroke-linejoin': 'round' }));
+        chart.svg.appendChild(svgNode('polyline', { points: timePoints.join(' '), fill: 'none', stroke: timeColour, 'stroke-width': 3, 'stroke-linejoin': 'round' }));
+
+        const guide = svgNode('line', { y1: top, y2: bottom, stroke: palette.white, 'stroke-width': 1, 'stroke-dasharray': '4 4', opacity: 0, 'pointer-events': 'none' });
+        chart.svg.appendChild(guide);
+        const spacing = (right - left) / Math.max(1, rows.length - 1);
+        rows.forEach(function(row, index) {
+            const x = left + spacing * index;
+            const hour = Number(row['Hour of Day (0-23)']);
+            const nextHour = (hour + 1) % 24;
+            const label = `${String(hour).padStart(2, '0')}:00–${String(nextHour).padStart(2, '0')}:00\n${Number(row.Count).toLocaleString()} calls\nP90 response: ${(Number(row['P90 (sec)']) / 60).toFixed(1)} minutes`;
+            const hitArea = svgNode('rect', { x: Math.max(left, x - spacing / 2), y: top, width: index === 0 || index === rows.length - 1 ? spacing / 2 : spacing, height: bottom - top, fill: 'transparent' });
+            chart.svg.appendChild(hitArea);
+            bindChartTooltip(hitArea, mount, label, { node: guide, x: x });
+        });
+    }
+
+    function renderTrends(figure, rows) {
+        const priorities = ['0-PURPLE', '1-RED (ACP)', '2-RED (PCP)', '3-ORANGE', '4-YELLOW'];
+        const mount = figure.querySelector('[data-chart-mount]');
+        const legend = figure.querySelector('[data-chart-legend]');
+        const palette = chartPalette(figure);
+        const compact = mount.getBoundingClientRect().width < 540;
+        const chart = createSvg(mount, compact ? 430 : 500);
+        const left = compact ? 45 : 62;
+        const right = chart.width - 24;
+        const top = 28;
+        const bottom = chart.height - 58;
+        const months = Array.from(new Set(rows.map(function(row) { return row['Year-Month']; }))).sort();
+        const maximum = Math.ceil(Math.max.apply(null, rows.filter(function(row) { return priorities.includes(row['Final Priority']); }).map(function(row) { return Number(row['P90 (sec)']) / 60; })) / 10) * 10;
+        const monthNames = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+
+        function formatMonth(month) {
+            const parts = month.split('-');
+            return `${monthNames[Number(parts[1]) - 1]} ’${parts[0].slice(2)}`;
+        }
+
+        legend.replaceChildren(...priorities.map(function(priority) {
+            const item = document.createElement('span');
+            const dot = document.createElement('i');
+            dot.style.background = palette.priorities[priority];
+            item.append(dot, document.createTextNode(shortPriority(priority)));
+            return item;
+        }));
+
+        for (let minutes = 0; minutes <= maximum; minutes += 15) {
+            const y = bottom - (bottom - top) * minutes / maximum;
+            chart.svg.appendChild(svgNode('line', { x1: left, x2: right, y1: y, y2: y, stroke: palette.grid, 'stroke-opacity': minutes === 0 ? 0.45 : 0.18 }));
+            addText(chart.svg, left - 8, y + 4, `${minutes}`, { fill: palette.muted, 'font-size': 9, 'text-anchor': 'end' });
+        }
+        addText(chart.svg, left, 14, 'Minutes', { fill: palette.muted, 'font-size': 10 });
+
+        months.forEach(function(month, index) {
+            if (compact && index % 2) return;
+            const x = left + (right - left) * index / Math.max(1, months.length - 1);
+            addText(chart.svg, x, bottom + 26, formatMonth(month), { fill: palette.white, 'font-size': 10, 'text-anchor': 'middle' });
+        });
+
+        priorities.forEach(function(priority) {
+            const series = months.map(function(month) {
+                return rows.find(function(row) { return row['Year-Month'] === month && row['Final Priority'] === priority; });
+            }).filter(Boolean);
+            const points = series.map(function(row, index) {
+                const x = left + (right - left) * index / Math.max(1, months.length - 1);
+                const y = bottom - (bottom - top) * (Number(row['P90 (sec)']) / 60) / maximum;
+                return `${x},${y}`;
+            }).join(' ');
+            chart.svg.appendChild(svgNode('polyline', { points: points, fill: 'none', stroke: palette.priorities[priority], 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+            series.forEach(function(row, index) {
+                const x = left + (right - left) * index / Math.max(1, months.length - 1);
+                const minutes = Number(row['P90 (sec)']) / 60;
+                const y = bottom - (bottom - top) * minutes / maximum;
+                const point = svgNode('circle', { cx: x, cy: y, r: compact ? 4 : 5, fill: palette.priorities[priority], stroke: palette.white, 'stroke-width': 1 });
+                chart.svg.appendChild(point);
+            });
+        });
+
+        const guide = svgNode('line', { y1: top, y2: bottom, stroke: palette.white, 'stroke-width': 1, 'stroke-dasharray': '4 4', opacity: 0, 'pointer-events': 'none' });
+        chart.svg.appendChild(guide);
+        const monthSpacing = (right - left) / Math.max(1, months.length - 1);
+        months.forEach(function(month, index) {
+            const x = left + monthSpacing * index;
+            const monthRows = priorities.map(function(priority) {
+                return rows.find(function(row) { return row['Year-Month'] === month && row['Final Priority'] === priority; });
+            }).filter(Boolean);
+            const tooltipText = [formatMonth(month)].concat(monthRows.map(function(row) {
+                const minutes = Number(row['P90 (sec)']) / 60;
+                return `${shortPriority(row['Final Priority'])}: ${minutes.toFixed(1)} min P90 · ${Number(row.Count).toLocaleString()} calls`;
+            })).join('\n');
+            const hitArea = svgNode('rect', {
+                x: Math.max(left, x - monthSpacing / 2),
+                y: top,
+                width: index === 0 || index === months.length - 1 ? monthSpacing / 2 : monthSpacing,
+                height: bottom - top,
+                fill: 'transparent'
+            });
+            chart.svg.appendChild(hitArea);
+            bindChartTooltip(hitArea, mount, tooltipText, { node: guide, x: x });
+        });
+    }
+
+    function renderFigure(figure) {
+        const type = figure.dataset.emsChart;
+        if (!data[type]) return;
+        if (type === 'targets') renderTargets(figure, data[type]);
+        if (type === 'emergencies') renderEmergencies(figure, data[type]);
+        if (type === 'escalation') renderEscalation(figure, data[type]);
+        if (type === 'trends') renderTrends(figure, data[type]);
+        if (type === 'availability') renderAvailability(figure, data[type]);
+        if (type === 'hourly') renderHourly(figure, data[type]);
+        if (type === 'staffing') renderStaffing(figure, data[type]);
+        if (type === 'hospital') renderHospital(figure, data[type]);
+    }
+
+    Promise.all(Object.entries(files).map(function(entry) {
+        return fetch(entry[1]).then(function(response) {
+            if (!response.ok) throw new Error(`Unable to load ${entry[1]} (${response.status})`);
+            return response.text();
+        }).then(function(csv) { data[entry[0]] = parseCsv(csv); });
+    })).then(function() {
+        figures.forEach(renderFigure);
+    }).catch(function(error) {
+        figures.forEach(function(figure) {
+            figure.querySelector('[data-chart-mount]').textContent = 'This graphic could not be loaded.';
+        });
+        console.error(error);
+    });
+
+    window.addEventListener('resize', function() {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(function() { figures.forEach(renderFigure); }, 180);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initializeEmsDataCharts);
 
 // End paywall detection code
 

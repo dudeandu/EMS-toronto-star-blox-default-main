@@ -1,7 +1,7 @@
 Dispatcher: Toronto ambulance, where do you need us?
-Caller: Hi, 582 Dovercourt Road.
+Caller: Hi, ███ █████████ ████.
 Dispatcher: Just please repeat that for verification?
-Caller: 582 Dovercourt Road.
+Caller: ███ █████████ ████.
 Dispatcher: And what's the closest major intersection over there?
 Caller: Uh, Bloor and Ossington.
 Dispatcher: Okay, and is that a house or an apartment?
@@ -12,7 +12,7 @@ Dispatcher: Apartment 2.
 Caller: Apartment 2.
 Dispatcher: Yeah.
 Dispatcher: Okay. And what's the phone number you're calling from just in case we get disconnected?
-Caller: It's 4, sorry, 416-768-1627.
+Caller: It's ███-███-████.
 Dispatcher: Okay, tell me exactly what happened.
 Caller: So my husband has been having a lot of leg pain recently, uh, and quite severe, um, but he did ride his bicycle today, and just as he got uh home, he fell off, and has been in extreme pain ever since. Um, so to the he can't stand up, which is why we're calling an ambulance normally we'd just get in a taxi. But he's unable to stand.
 Dispatcher: Okay, I'll get some help started for you, okay? I'm just going to ask you some standard questions. Are you with him now?

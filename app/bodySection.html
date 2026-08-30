@@ -1,4 +1,7 @@
 <div class="SA_after-scrollytelling-fix SA_body-section">
+
+    @@include('./headline.html')
+
     <div class="SA_text-grid">
         <div class="SA_text-wrap">
         <p>Officials have acknowledged that something needs to change. In June 2025, days after bystanders waited on hold with 9-1-1 for nearly seven minutes after a 15-year-old boy was shot and lay waiting for help, Toronto Mayor Olivia Chow told reporters there would be a $52-million investment over the coming years to boost staffing and hasten responses:</p>
@@ -14,6 +17,17 @@
         <p>More often than not, in the most serious cases, ambulance responses failed to hit the service’s own internal response targets.</p>
 
         <p>The data analysed by the Star shows only 27 per cent of calls assigned the highest severity level, of imminently life threatening conditions, met internal response targets; among potentially life-threatening calls, only 37 per cent hit targets.</p>
+
+        <figure class="SA_ems-data-chart" data-ems-chart="targets">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">Response targets</p>
+                <h3>Most of the highest-priority calls missed the target</h3>
+                <p>Share of calls that took longer than Toronto Paramedic Services’ official response goal, by final priority.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic" data-chart-mount role="img" aria-label="Bar chart showing the percentage of ambulance calls above the official response goal by priority"></div>
+            <p class="SA_ems-data-chart__note">Purple calls are imminently life-threatening; Red calls are potentially life-threatening. Referrals, Code 2 calls and scheduled transfers are excluded.</p>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+        </figure>
 
         <p>A Star investigation found more than 4,600 of these highest priority calls – known as “purple” and “red” calls – had wait times over 30 minutes. More than 1,100 stretched above an hour.</p>
 
@@ -51,6 +65,17 @@
 
         <p>The data also includes strokes with response times above four hours. The most egregious case, in December 2025, was also assigned a red-level priority, but was initially triaged as a much less severe yellow case. The response time was four hours and 36 minutes, the records show. Of the stroke calls, 193 calls of varying severity levels took upwards of an hour between the first 911 call and first ambulance arriving on scene, according to the data.</p>
 
+        <figure class="SA_ems-data-chart" data-ems-chart="emergencies">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">Time-sensitive emergencies</p>
+                <h3>Even life-threatening calls can have long waits</h3>
+                <p>Median and 90th-percentile response times for selected Purple and Red emergency calls.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--tall" data-chart-mount role="img" aria-label="Dot plot comparing median and 90th-percentile response times for selected life-threatening emergencies"></div>
+            <p class="SA_ems-data-chart__note">At the 90th percentile, nine in 10 calls received a response within the time shown, while one in 10 took longer.</p>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+        </figure>
+
         <p>The response time captured in the data represents the time between the first 9-11 call and the ambulance arriving on scene. It does not factor in the time it takes to reach a patient if they are inside a building, to assess a patient on-site, or to transport them to hospital.</p>
 
         <p>For strokes, Mok said, in-hospital tests are required to determine whether someone can safely receive thrombolytic medication to dissolve a clot and restore oxygen to their brain during a stroke – or if they have a brain bleed, meaning that treatment could kill them.</p>
@@ -69,6 +94,16 @@
 
         <p>The most critical cases, where not a single staffed ambulance is available across the city, had also jumped – from 29 incidents in 2019 to more than 1,200 four years later, she wrote.</p>
 
+        <figure class="SA_ems-data-chart SA_ems-data-chart--float SA_ems-data-chart--float-left" data-ems-chart="availability">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">System capacity</p>
+                <h3>Periods with few—or no—available ambulances surged</h3>
+                <p>Number of incidents recorded in 2019 and 2023.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--compact" data-chart-mount role="img" aria-label="Slope chart comparing incidents of low and zero staffed-ambulance availability in 2019 and 2023"></div>
+            <p class="SA_ems-data-chart__source">Source: City of Toronto Auditor General.</p>
+        </figure>
+
         <p>Anderson pointed to festering problems from long handovers in hospital to a growing reliance on “full-shift overtime,” which had risen 169 per cent in those same four years, adding to the risk of stress-related injuries and staff turnover for frontline workers.</p>
 
         <p>“Timely ambulance emergency response is critical, particularly for people with medical issues requiring urgent attention at the hospital,” the AG’s office wrote. “Every second matters for ambulance emergency response, particularly when it is a matter of life or death.”</p>
@@ -77,9 +112,31 @@
 
         <p>Ambulance demand is rising for a constellation of entangled reasons, experts say: Baby Boomers are getting older, requiring more urgent care. At the same time, more and more Torontonians do not have access to a family doctor, so their needs spill over into the emergency system. Other social crises like worsening drug toxicity only add fuel to the fire.</p>
 
+        <figure class="SA_ems-data-chart SA_ems-data-chart--float SA_ems-data-chart--float-right" data-ems-chart="hourly">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">Pressure through the day</p>
+                <h3>Demand and response times change hour by hour</h3>
+                <p>Call volume and 90th-percentile response time by the hour in which the call was received.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__legend" data-chart-legend aria-hidden="true"></div>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--trend" data-chart-mount role="img" aria-label="Line chart comparing hourly ambulance call volume with 90th-percentile response time"></div>
+            <p class="SA_ems-data-chart__note">At the 90th percentile, nine in 10 calls received a response within the time shown, while one in 10 took longer.</p>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+        </figure>
+
         <p>Staffing, over time, has not kept pace. Anderson’s 2024 report pointed out that it would be “challenging” to make any improvements to ambulance response times without more people on the payroll. When Chow vowed improvements to the service last summer, it came alongside the long-awaited promise of a multi-year staffing plan, at a cost of $52 million.</p>
 
         <p>But gains, each year, are cannibalized by departures. In 2025, Toronto hired 167 new paramedics, but lost 97, according to records obtained via freedom of information legislation. A similar story played out in 2024, when 162 medics were hired and 90 left the service.</p>
+
+        <figure class="SA_ems-data-chart SA_ems-data-chart--float SA_ems-data-chart--float-left" data-ems-chart="staffing">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">Staffing churn</p>
+                <h3>New hires were offset by paramedics leaving</h3>
+                <p>Paramedics hired and departed in 2024 and 2025.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--compact" data-chart-mount role="img" aria-label="Grouped bars comparing paramedics hired and departed in 2024 and 2025"></div>
+            <p class="SA_ems-data-chart__source">Source: Records obtained by the Toronto Star through freedom of information legislation.</p>
+        </figure>
 
         <p>In many cases, front-line sources tell the Star, the departures are not fueled by retirements but instead by early- or mid-career paramedics, burnt-out by the relentless pace. Some leave for similar jobs in nearby jurisdictions that are not under the same strain as Toronto.</p>
 
@@ -104,6 +161,16 @@
         <p>There used to be time to decompress after calls, one medic said, especially the “hot calls” that grappled with harder, heavier situations. “Now, it’s kind of turning into automatons or robots. You’re just a body in a seat attending the next call, next call, next call,” one said.</p>
 
         <p>The service sees offload at hospitals as a key pinch point for improving its response times. In its statement, it said 60 per cent of the average paramedics’ shift time is spent in hospital on a daily basis.</p>
+
+        <figure class="SA_ems-data-chart SA_ems-data-chart--float SA_ems-data-chart--float-right" data-ems-chart="hospital">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">An average shift</p>
+                <h3>Most paramedic shift time is spent in hospital</h3>
+                <p>Share of an average paramedic’s daily shift, according to Toronto Paramedic Services.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--compact" data-chart-mount role="img" aria-label="Waffle chart showing that 60 per cent of an average paramedic shift is spent in hospital"></div>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services.</p>
+        </figure>
 
         <p>“In-hospital wait times for paramedics is the most significant challenge negatively impacting ambulance availability in the community,” its statement to the Star said.</p>
 
@@ -147,6 +214,17 @@
 
         <p>The paramedic service, in a statement, said the majority of especially urgent calls with waits above 30 minutes – the red and purple ones – are calls like Duncan’s, where the initial priority did not reflect the patient’s actual condition upon arrival and was bumped up.</p>
 
+        <figure class="SA_ems-data-chart" data-ems-chart="escalation">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">Priority changes</p>
+                <h3>When priority changed, it usually became more urgent</h3>
+                <p>Direction of change among calls with both an initial and final priority recorded.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--compact" data-chart-mount role="img" aria-label="Stacked bar showing escalated, de-escalated and unchanged ambulance-call priorities"></div>
+            <p class="SA_ems-data-chart__note">Initial priority is missing for 77.9% of calls, so its upgrade/down-grade comparison only represents records where an initial priority was available.</p>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+        </figure>
+
         <p>Paramedics who spoke to the Star say there are many reasons this can happen, from a patient’s medical condition worsening during their wait for an ambulance to a caller downplaying their symptoms initially or having trouble properly communicating them to the 9-1-1 operator, including cases involving language barriers or mental health challenges.</p>
 
         <p>Still, the service – in its statement – said it was concerned about patients&#39; health outcomes being impacted in these cases. “Some high-priority calls experience delays, particularly during periods when emergency call demand is elevated and ambulance availability is low,” wrote Dineen Robinson, acting commander of policy, projects and process improvement – also citing staffing, hospital offload times, and travel conditions among pressures at play.</p>
@@ -156,6 +234,18 @@
         <p>Over the course of the last year, the ambulance data obtained by the Star shows that the service has made a small improvement on average response times for purple calls. From May 2025 to the end of April 2026, response times dropped to an average of 469 seconds (a little less than eight minutes) from an average of 538 seconds (about nine minutes).</p>
 
         <p>But every other level of urgency stagnated or worsened over this same time period.</p>
+
+        <figure class="SA_ems-data-chart SA_ems-data-chart--wide" data-ems-chart="trends">
+            <figcaption>
+                <p class="SA_ems-data-chart__eyebrow">May 2025 to April 2026</p>
+                <h3>Response times shifted differently by priority</h3>
+                <p>Monthly 90th-percentile response time by final priority.</p>
+            </figcaption>
+            <div class="SA_ems-data-chart__legend" data-chart-legend aria-hidden="true"></div>
+            <div class="SA_ems-data-chart__graphic SA_ems-data-chart__graphic--trend" data-chart-mount role="img" aria-label="Line chart showing monthly 90th-percentile ambulance response time by priority"></div>
+            <p class="SA_ems-data-chart__note">At the 90th percentile, nine in 10 calls received a response within the time shown, while one in 10 took longer.</p>
+            <p class="SA_ems-data-chart__source">Source: Toronto Paramedic Services records obtained by the Toronto Star.</p>
+        </figure>
 
         <p>The paramedic service, asked about the Star’s findings, said it measures call response outcomes differently – counting calls more simply as “high” or “low” priority. Last year, the service said its response time to 90 per cent of high priority calls was 14.5 minutes, which has come down in 2026. But the tradeoff is that low priority call response times have gotten worse – by 12.2 per cent, compared to the 9.7 per cent improvement for high priorities.</p>
 

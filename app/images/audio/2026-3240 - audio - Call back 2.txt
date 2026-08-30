@@ -1,7 +1,7 @@
 Dispatcher: Toronto ambulance, where do you need us?
 Caller: Uh, well I already made a call, just after 6 o'clock, and...
 Dispatcher: What's the address?
-Caller: It's 582 Dovercourt Road.
+Caller: It's ███ █████████ ████.
 Dispatcher: What's your name?
 Caller: Laura.
 Dispatcher: Okay, tell me exactly what happened.
