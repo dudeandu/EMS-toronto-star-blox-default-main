@@ -1,17 +1,16 @@
 // Theme colours
-$starblue: #0065a4;
+$starblue: #0077BB;
 $headerText: #fff;
 $bodyText: #fff;
 $pullQuote: rgba(0, 0, 0, 0.07);
 $bodyBackground: #000;
 $borderColour: #ddd;
-$linkcolour: rgba(0, 136, 255, 1);
 $captioncolour: rgba(56, 56, 56, 0.83);
 $footerBackground: #333;
 $footerText: #fff;
 
-$primarycolour: #006ed2;
-$linkcolour: #{$primarycolour};
+$primarycolour: #0077BB;
+$linkcolour: #f15252;
 $secondarycolour: rgba(56, 56, 56, 0.83);
 
 // Supporting colours
@@ -50,6 +49,10 @@ $timelineMutedText: rgba(255, 255, 255, 0.72);
 $timelineUnheardText: rgba(255, 255, 255, 0.3);
 $timelineCardBackground: rgba(0, 0, 0, 0.78);
 $timelineTextShadow: rgba(0, 0, 0, 0.9);
+$headlineImageFade: rgba(0, 0, 0, 0.68);
+$headlineImageEdgeFade: rgba(0, 0, 0, 0.92);
+$beesMinorTimeLine: rgba(255, 255, 255, 0.1);
+$beesHourTimeLine: rgba(255, 255, 255, 0.52);
 $timelineDispatcher: #9fd3ff;
 $timelineCaller: #c7f1b2;
 $overlayBackground: rgba(0, 0, 0, 0.7);

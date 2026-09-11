@@ -1,18 +1,104 @@
 @use 'variables' as *;
 
+.SA_graphic-standalone {
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    overflow-x: hidden;
+    background: $bodyBackground;
+
+    main {
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .SA_ems-data-chart {
+        float: none;
+        width: 100%;
+        margin: 0;
+        transform: none;
+    }
+
+    .warning_message { display: none; }
+}
+
 .SA_body-section {
     padding-top: clamp(4rem, 10vh, 8rem);
 }
 
-.SA_story-headline {
-    width: min(calc(100% - 2rem), 960px);
+.SA_body-column-photo {
+    width: 100%;
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    &--black-and-white img {
+        filter: grayscale(1);
+    }
+
+    .SA_caption__description {
+        color: $bodyText !important;
+    }
+
+    .SA_caption__credit {
+        color: $mutedLightText !important;
+    }
+}
+
+.SA_headerContainer {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100svh;
     margin: 0 auto clamp(4rem, 9vw, 7rem);
-    padding: clamp(2rem, 6vw, 4.5rem) 0;
-    color: $bodyText;
+    overflow: hidden;
     border-block: 1px solid $subtleLightBorder;
 
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &::before {
+        background: url('../images/ambulances-main.jpg') center / cover no-repeat;
+        filter: grayscale(1);
+    }
+
+    &::after {
+        background: linear-gradient(to bottom, $headlineImageEdgeFade 0%, $headlineImageFade 35%, $headlineImageFade 65%, $headlineImageEdgeFade 100%);
+    }
+}
+
+.SA_story-headline {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    margin: 0;
+    padding: clamp(3rem, 8vw, 6rem) 1rem;
+    color: $bodyText;
+
     &__inner {
+        justify-self: center;
+        box-sizing: border-box;
+        width: min(100%, 960px);
+        max-width: 960px;
         margin: 0 auto;
+        padding-inline: 1rem;
         text-align: center;
     }
 
@@ -59,7 +145,7 @@
 
         > * {
             color: $timelineMutedText !important;
-            font-size: 0.8rem !important;
+            font-size: 1rem !important;
             font-weight: 700;
             letter-spacing: 0.04em !important;
         }
@@ -68,6 +154,7 @@
 
 .SA_ems-data-chart {
     --chart-purple: #{$categoryPurple};
+    --chart-red: #{$categoryRed};
     --chart-red-acp: #{$categoryRed};
     --chart-red-pcp: #{$categoryRedPcp};
     --chart-orange: #{$categoryOrange};
@@ -88,7 +175,7 @@
         h3 {
             margin: 0.35rem 0 0.65rem;
             font-family: $sectionHeadingFont !important;
-            font-size: clamp(1.55rem, 4vw, 2.5rem) !important;
+            font-size: clamp(1.3rem, 2.8vw, 1.85rem) !important;
             font-weight: $sectionHeadingWeight !important;
             line-height: 1.08 !important;
         }
@@ -119,7 +206,9 @@
 
     &__graphic {
         position: relative;
-        min-height: 24rem;
+        min-height: 15rem;
+        overflow-x: hidden;
+        overflow-x: clip;
         border-block: 1px solid $subtleLightBorder;
 
         &--tall { min-height: 29rem; }
@@ -129,6 +218,7 @@
         svg {
             display: block;
             width: 100%;
+            max-width: 100%;
             height: auto;
             overflow: visible;
 
@@ -152,6 +242,7 @@
     &__tooltip {
         position: absolute;
         z-index: 5;
+        box-sizing: border-box;
         width: 17rem;
         max-width: calc(100% - 1rem);
         padding: 0.65rem 0.8rem;
@@ -166,12 +257,18 @@
         border: 1px solid $timelineLine;
         box-shadow: 0 0.4rem 1.25rem $shadowColour;
         opacity: 0;
-        transform: translate(0.75rem, -50%);
+        transform: translateY(-50%);
         transition: opacity 120ms ease;
 
         &--visible { opacity: 1; }
-        &--left { transform: translate(calc(-100% - 0.75rem), -50%); }
-        &--right { transform: translate(0.75rem, -50%); }
+        &--left,
+        &--right { transform: translateY(-50%); }
+
+        &-line {
+            display: block;
+
+            & + & { margin-top: 0.16rem; }
+        }
     }
 
     &__legend {
@@ -290,10 +387,13 @@
 .SA_ems-beeswarm {
     --bees-background: #{$black};
     --bees-purple: #{$categoryPurple};
+    --bees-red: #{$categoryRed};
     --bees-red-acp: #{$categoryRed};
     --bees-red-pcp: #{$categoryRedPcp};
     --bees-orange: #{$categoryOrange};
     --bees-yellow: #{$categoryYellow};
+    --bees-minor-time-line: #{$beesMinorTimeLine};
+    --bees-hour-time-line: #{$beesHourTimeLine};
     width: min(100%, 1100px);
     margin: 2rem auto 5rem;
     padding: 0 1rem;
@@ -370,6 +470,7 @@
         }
 
         [data-priority='purple'] { background: $categoryPurple; }
+        [data-priority='red'] { background: $categoryRed; }
         [data-priority='red-acp'] { background: $categoryRed; }
         [data-priority='red-pcp'] { background: $categoryRedPcp; }
         [data-priority='orange'] { background: $categoryOrange; }
@@ -428,6 +529,16 @@
 }
 
 .SA_bees-annotation {
+    &--extreme &__box {
+        stroke: $categoryRed;
+        stroke-width: 2;
+    }
+
+    &__extreme-line {
+        stroke-width: 4;
+        stroke-opacity: 1;
+    }
+
     &__connector {
         fill: none;
         stroke-width: 1.5;
@@ -504,6 +615,11 @@
         stroke-width: 3;
     }
 
+    &--mean-origin {
+        stroke: $black;
+        stroke-width: 5;
+    }
+
     &__label {
         fill: $white;
         font-family: $codeFont;
@@ -555,6 +671,7 @@
     &__background {
         --timeline-image-scale: 1.06;
         --timeline-image-y: 0px;
+        --timeline-blackout-opacity: 0;
         overflow: hidden;
         background: $black;
 
@@ -586,6 +703,16 @@
         inset: 0;
         z-index: 1;
         background: $timelineShade;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: $black;
+            opacity: var(--timeline-blackout-opacity);
+            transition: opacity 100ms linear;
+            will-change: opacity;
+        }
     }
 
     &__track {
@@ -600,7 +727,7 @@
         color: $timelineMutedText;
         opacity: var(--timeline-opacity);
         transform: translate3d(-50%, var(--timeline-offset), 0);
-        transition: transform 80ms linear, opacity 350ms ease;
+        transition: opacity 350ms ease;
         will-change: transform, opacity;
     }
 
@@ -664,8 +791,9 @@
     }
 
     &__marker-time {
-        top: 0.55rem;
+        top: 50%;
         font-weight: 500;
+        transform: translateY(-50%);
     }
 
     .SA_scroll-text-wrapper {
@@ -678,6 +806,10 @@
         .SA_opening-timeline__pain-emphasis {
             color: $categoryRed !important;
         }
+    }
+
+    .SA_scrollytelling-slide:last-child .SA_scroll-text-wrapper {
+        padding-bottom: 15vh !important;
     }
 
     &__card {
@@ -705,6 +837,8 @@
     }
 
     &__time {
+        margin-bottom: 0 !important;
+        margin-block-end: 0 !important;
         font-family: $slabFont !important;
         font-size: clamp(2.5rem, 10vw, 7rem) !important;
         font-weight: 800 !important;
@@ -719,6 +853,12 @@
         }
     }
 
+    &__time-description {
+        font-size: 18px !important;
+
+        span { font-size: 18px !important; }
+    }
+
     &__card--opening-time {
         padding: 0.25rem 0.5rem;
         transform: translateY(-10.5rem);
@@ -728,14 +868,30 @@
         }
     }
 
-    &__card--intro,
-    &__card--context {
+    &__card--intro {
         transform: translateY(-2rem);
+        font-size: 20px !important;
 
-        p {
-            font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+        p,
+        span {
+            font-size: 20px !important;
             line-height: 1.25 !important;
         }
+    }
+
+    &__card--context {
+        transform: translateY(-2rem);
+        font-size: 18px !important;
+
+        p,
+        span {
+            font-size: 18px !important;
+            line-height: 1.25 !important;
+        }
+    }
+
+    &__card--quote p {
+        font-family: $codeFont !important;
     }
 
     &__intro-slide--lead .SA_scroll-text-wrapper {
@@ -771,7 +927,7 @@
 
         > p {
             font-family: $codeFont !important;
-            font-size: clamp(1rem, 2.3vw, 1.55rem) !important;
+            font-size: clamp(0.8rem, 1.84vw, 1.24rem) !important;
             font-weight: 400;
             line-height: 1.5 !important;
             text-align: center;
@@ -811,17 +967,164 @@
     }
 
     &__audio {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
+        display: block;
+        width: 100%;
+        height: 2.5rem;
+        margin-top: 1rem;
+
+        &[hidden] { display: none; }
+    }
+
+    &__audio-trigger {
+        margin-top: 1rem;
+        padding: 0.65rem 1rem;
+        border: 1px solid $timelineLine;
+        border-radius: 3px;
+        background: $transparent;
+        color: $white;
+        font-family: $codeFont;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $white;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $white;
+            outline-offset: 3px;
+        }
+
+        &[hidden] { display: none; }
+    }
+
+    &__audio-note {
+        margin: 0.5rem 0 0 !important;
+        color: $timelineMutedText !important;
+        font-family: $codeFont !important;
+        font-size: 0.68rem !important;
+        line-height: 1.35 !important;
+
+        &[hidden] { display: none; }
     }
 
     &__audio-card {
         padding: 1.5rem;
         // background: $timelineCardBackground;
+    }
+
+    &__call-blurb {
+        margin: 0 !important;
+        font-family: $codeFont !important;
+        font-size: 14px !important;
+        line-height: 1.55 !important;
+    }
+
+    &__call-blurb + &__call-blurb {
+        margin-top: 12px !important;
+    }
+
+    .SA_scroll-text-wrapper &__call-blurb.SA_opening-timeline__speaker--dispatcher {
+        color: $timelineDispatcher !important;
+    }
+
+    .SA_scroll-text-wrapper &__call-blurb.SA_opening-timeline__speaker--caller {
+        color: $timelineCaller !important;
+    }
+
+    &__call-reader-open,
+    &__call-reader-close {
+        border: 1px solid $timelineLine;
+        background: $transparent;
+        color: $white;
+        font-family: $codeFont;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $white;
+            background: $translucentWhite;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $white;
+            outline-offset: 3px;
+        }
+    }
+
+    &__call-reader-open {
+        margin-top: 1.25rem;
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        font-size: 13px;
+    }
+
+    &__call-reader {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+        background: rgba($black, 0.94);
+
+        &[hidden] { display: none; }
+    }
+
+    &__call-reader-panel {
+        position: relative;
+        box-sizing: border-box;
+        width: min(100%, 44rem);
+        max-height: calc(100vh - 2.5rem);
+        max-height: calc(100dvh - 2.5rem);
+        overflow-y: auto;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        border: 1px solid $timelineLine;
+        background: $bodyBackground;
+        color: $white;
+
+        h2 {
+            max-width: calc(100% - 5rem);
+            margin: 0 0 1.25rem;
+            color: $white;
+            font-family: $slabFont;
+            font-size: 24px !important;
+            line-height: 1.15;
+        }
+    }
+
+    &__call-reader-close {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 12px;
+    }
+
+    &__call-reader-audio {
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    &__call-reader-transcript {
+        p {
+            margin: 0 0 1.15rem;
+            color: $white;
+            font-family: $codeFont;
+            font-size: 14px !important;
+            line-height: 1.65;
+        }
+
+        strong {
+            color: $white;
+            font-family: $slabFont;
+            font-size: inherit !important;
+            font-weight: 800;
+        }
     }
 
     &__transcript {
@@ -900,7 +1203,66 @@
     }
 }
 
+body.SA_call-reader-open { overflow: hidden; }
+
+@media (min-width: 701px) {
+    .SA_opening-timeline__time-description,
+    .SA_opening-timeline__time-description span,
+    .SA_opening-timeline__card--intro,
+    .SA_opening-timeline__card--intro p,
+    .SA_opening-timeline__card--intro span,
+    .SA_opening-timeline__card--context,
+    .SA_opening-timeline__card--context p,
+    .SA_opening-timeline__card--context span {
+        font-size: 22px !important;
+    }
+
+    .SA_opening-timeline__call-blurb,
+    .SA_opening-timeline__call-reader-transcript p {
+        font-size: 15px !important;
+    }
+
+    .SA_opening-timeline__call-reader-panel h2 {
+        font-size: 28px !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .SA_opening-timeline__time-description,
+    .SA_opening-timeline__time-description span,
+    .SA_opening-timeline__card--intro,
+    .SA_opening-timeline__card--intro p,
+    .SA_opening-timeline__card--intro span,
+    .SA_opening-timeline__card--context,
+    .SA_opening-timeline__card--context p,
+    .SA_opening-timeline__card--context span {
+        font-size: 24px !important;
+    }
+
+    .SA_opening-timeline__call-blurb,
+    .SA_opening-timeline__call-reader-transcript p {
+        font-size: 16px !important;
+    }
+
+    .SA_opening-timeline__call-reader-panel h2 {
+        font-size: 32px !important;
+    }
+}
+
+.SA_opening-timeline__card--context .SA_opening-timeline__audio-note {
+    color: $timelineMutedText !important;
+    font-family: $codeFont !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
 @media (max-width: 600px) {
+    .SA_opening-timeline__card {
+        background: $timelineCardBackground;
+        border-radius: 3px;
+    }
+
     .SA_opening-timeline__track {
         top: 62%;
     }

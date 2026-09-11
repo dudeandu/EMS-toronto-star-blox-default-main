@@ -55,9 +55,14 @@ function updateOpeningTimeline(response) {
     const timelineStartDistance = timelineStart
         ? Math.max(0, timelineStart.offsetTop - window.innerHeight * 0.5)
         : 0;
+    const timelineAnchorY = parseFloat(window.getComputedStyle(timeline).top) || window.innerHeight * 0.5;
     const timelineAnchors = Array.from(wrapper.querySelectorAll('[data-opening-timeline-progress]')).map(function(slide) {
+        const time = slide.querySelector('.SA_opening-timeline__time');
+        const timeCentre = time
+            ? time.getBoundingClientRect().top + time.offsetHeight * 0.5
+            : slide.getBoundingClientRect().top + slide.offsetHeight * 0.5;
         return {
-            distance: Math.max(0, slide.offsetTop + slide.offsetHeight * 0.5 - window.innerHeight * 0.5),
+            distance: Math.max(0, scrolledDistance + timeCentre - timelineAnchorY),
             progress: Number(slide.dataset.openingTimelineProgress)
         };
     });
@@ -87,13 +92,20 @@ function updateOpeningTimeline(response) {
 
     timelineProgress = Math.max(0, Math.min(1, timelineProgress));
     const timelineReveal = Math.max(0, Math.min(1, (scrolledDistance - timelineStartDistance) / Math.max(1, window.innerHeight * 0.12)));
+    const fadeoutSlide = wrapper.querySelector('[data-opening-fadeout]');
+    let endingFade = 0;
+    if (fadeoutSlide) {
+        const fadeoutRect = fadeoutSlide.getBoundingClientRect();
+        endingFade = Math.max(0, Math.min(1, (window.innerHeight * 0.72 - fadeoutRect.top) / (window.innerHeight * 0.25)));
+    }
     timeline.style.setProperty('--timeline-offset', `${timelineProgress * -100}%`);
-    timeline.style.setProperty('--timeline-opacity', String(timelineReveal));
+    timeline.style.setProperty('--timeline-opacity', String(timelineReveal * (1 - endingFade)));
 
     const background = wrapper.querySelector('.SA_opening-timeline__background');
     if (background) {
         background.style.setProperty('--timeline-image-scale', String(1.06 + overallProgress * 0.07));
         background.style.setProperty('--timeline-image-y', `${overallProgress * -1.5}vh`);
+        background.style.setProperty('--timeline-blackout-opacity', String(endingFade));
     }
 
     const soundChoice = wrapper.querySelector('.SA_opening-timeline__sound-choice');
@@ -204,6 +216,29 @@ function playTimelineTranscript(audioId, transcriptId, startTime, endTime) {
     }
 }
 
+function playTimelineAudio(audioId, startTime, endTime) {
+    const audio = document.getElementById(audioId);
+    if (!audio) return;
+
+    delete audio.dataset.transcriptId;
+    audio.dataset.segmentStart = startTime;
+    audio.dataset.segmentEnd = endTime;
+    audio.currentTime = Number(startTime);
+
+    document.querySelectorAll('.SA_opening-timeline audio').forEach(function(otherAudio) {
+        if (otherAudio !== audio) otherAudio.pause();
+    });
+
+    const playAttempt = audio.play();
+    if (playAttempt && typeof playAttempt.catch === 'function') {
+        playAttempt.catch(function() {
+            document.querySelectorAll(`.SA_opening-timeline__mute[data-audio-id="${audioId}"]`).forEach(function(button) {
+                button.textContent = 'Play audio';
+            });
+        });
+    }
+}
+
 function pauseTimelineAudio(audioId) {
     const audio = document.getElementById(audioId);
     if (audio) audio.pause();
@@ -212,6 +247,157 @@ function pauseTimelineAudio(audioId) {
 function stopOpeningTimelineAudio() {
     document.querySelectorAll('.SA_opening-timeline audio').forEach(function(audio) {
         audio.pause();
+    });
+}
+
+function initializeOpeningCallReader(openingTimeline) {
+    if (!openingTimeline) return;
+
+    const callDetails = {
+        'timeline-initial-call': {
+            title: 'Initial 911 call · 6:11 p.m.',
+            lines: [
+                { speaker: 'dispatcher', text: 'Dispatcher: Toronto ambulance, where do you need us?' },
+                { speaker: 'narration', text: 'Laurel gave their west-end address, recounted how her husband got hurt, and notified the dispatcher that her husband was also a cancer patient. He wasn’t bleeding or throwing up, she told them—but he was in pain severe enough that he couldn’t stand up.' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Ambulances will be sent as one becomes available. Our goal is to arrive within the hour, but it may take longer. Watch him closely.' }
+            ]
+        },
+        'timeline-call-back-1': {
+            title: 'Second 911 call · 7:08 p.m.',
+            lines: [
+                { speaker: 'dispatcher', text: 'Dispatcher: Toronto ambulance, where do you need us?' },
+                { speaker: 'caller', text: 'Caller: Well, I actually called about an hour ago, and I just wondered if there was any sense of when they might come.' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Unfortunately, Laurel, there is still a delay. We don’t have any available ambulances just yet, but as soon as we have one available, we’ll be sending it to you.' }
+            ]
+        },
+        'timeline-call-back-2': {
+            title: 'Third 911 call · 8:52 p.m.',
+            lines: [
+                { speaker: 'dispatcher', text: 'Dispatcher: Toronto ambulance, where do you need us?' },
+                { speaker: 'caller', text: 'Caller: Well, I already made a call—just after 6:00. My husband fell off his bicycle earlier today and he’s in an extreme amount of pain in his leg. He’s unable to stand up.' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Is he awake?' },
+                { speaker: 'caller', text: 'Caller: He’s awake, yes.' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Is he breathing?' },
+                { speaker: 'caller', text: 'Caller: He’s conscious. He’s breathing. He’s awake—' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Is he responding normally?' },
+                { speaker: 'caller', text: 'Caller: Yes. Yes. Just screaming in pain sometimes.' },
+                { speaker: 'dispatcher', text: 'Dispatcher: Okay, I apologize for the delay.' }
+            ]
+        }
+    };
+    const calls = {};
+
+    Object.keys(callDetails).forEach(function(audioId) {
+        const cards = Array.from(openingTimeline.querySelectorAll(`.SA_opening-timeline__mute[data-audio-id="${audioId}"]`)).map(function(button) {
+            return button.closest('.SA_opening-timeline__audio-card');
+        }).filter(Boolean);
+        if (!cards.length) return;
+
+        const slides = cards.map(function(card) { return card.closest('.SA_scrollytelling-slide'); });
+        const transcriptHtml = cards.map(function(card) {
+            const transcript = card.querySelector('.SA_opening-timeline__transcript');
+            return transcript ? transcript.innerHTML : '';
+        }).filter(Boolean);
+        const source = openingTimeline.querySelector(`#${audioId} source`);
+        calls[audioId] = {
+            title: callDetails[audioId].title,
+            transcriptHtml: transcriptHtml,
+            source: source ? source.getAttribute('src') : ''
+        };
+
+        const firstCard = cards[0];
+        const firstSlide = slides[0];
+        const blurb = document.createElement('div');
+        blurb.className = 'SA_opening-timeline__call-excerpt';
+        callDetails[audioId].lines.forEach(function(exchange) {
+            const line = document.createElement('p');
+            line.className = `SA_opening-timeline__call-blurb SA_opening-timeline__speaker--${exchange.speaker}`;
+            line.textContent = exchange.text;
+            blurb.appendChild(line);
+        });
+        const openButton = document.createElement('button');
+        openButton.className = 'SA_opening-timeline__call-reader-open';
+        openButton.type = 'button';
+        openButton.dataset.callReader = audioId;
+        openButton.textContent = 'Listen and read the full call';
+        firstCard.replaceChildren(blurb, openButton);
+        firstSlide.removeAttribute('data-on-enter');
+        firstSlide.removeAttribute('data-on-exit');
+        slides.slice(1).forEach(function(slide) { slide.remove(); });
+    });
+
+    if (!Object.keys(calls).length) return;
+    const dialog = document.createElement('div');
+    dialog.className = 'SA_opening-timeline__call-reader';
+    dialog.hidden = true;
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'SA-call-reader-title');
+    dialog.innerHTML = '<div class="SA_opening-timeline__call-reader-panel"><button class="SA_opening-timeline__call-reader-close" type="button" aria-label="Close full call">Close</button><h2 id="SA-call-reader-title"></h2><audio class="SA_opening-timeline__call-reader-audio" controls preload="metadata"></audio><div class="SA_opening-timeline__call-reader-transcript"></div></div>';
+    document.body.appendChild(dialog);
+
+    const title = dialog.querySelector('#SA-call-reader-title');
+    const audio = dialog.querySelector('audio');
+    const transcript = dialog.querySelector('.SA_opening-timeline__call-reader-transcript');
+    const closeButton = dialog.querySelector('.SA_opening-timeline__call-reader-close');
+    let returnFocus = null;
+
+    function callReaderLines(htmlChunks) {
+        const lines = [];
+        htmlChunks.forEach(function(html) {
+            const staging = document.createElement('div');
+            staging.innerHTML = html;
+            let line = null;
+            Array.from(staging.childNodes).forEach(function(node) {
+                if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'STRONG') {
+                    const speaker = node.textContent.toLowerCase().includes('dispatcher') ? 'dispatcher' : 'caller';
+                    line = document.createElement('p');
+                    line.className = `SA_opening-timeline__call-reader-line SA_opening-timeline__speaker--${speaker}`;
+                    node.classList.add(`SA_opening-timeline__speaker--${speaker}`);
+                    line.appendChild(node);
+                    lines.push(line);
+                } else {
+                    if (!line && node.textContent.trim()) {
+                        line = document.createElement('p');
+                        line.className = 'SA_opening-timeline__call-reader-line';
+                        lines.push(line);
+                    }
+                    if (line) line.appendChild(node);
+                }
+            });
+        });
+        return lines;
+    }
+
+    function closeReader() {
+        if (dialog.hidden) return;
+        audio.pause();
+        dialog.hidden = true;
+        document.body.classList.remove('SA_call-reader-open');
+        if (returnFocus) returnFocus.focus();
+    }
+
+    openingTimeline.querySelectorAll('[data-call-reader]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const call = calls[button.dataset.callReader];
+            if (!call) return;
+            stopOpeningTimelineAudio();
+            returnFocus = button;
+            title.textContent = call.title;
+            audio.src = call.source;
+            transcript.replaceChildren(...callReaderLines(call.transcriptHtml));
+            dialog.hidden = false;
+            document.body.classList.add('SA_call-reader-open');
+            closeButton.focus();
+        });
+    });
+
+    closeButton.addEventListener('click', closeReader);
+    dialog.addEventListener('click', function(event) {
+        if (event.target === dialog) closeReader();
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') closeReader();
     });
 }
 
@@ -247,31 +433,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    let timelineAudioUnlocked = false;
-    function unlockTimelineAudio() {
-        if (timelineAudioUnlocked) return;
-        timelineAudioUnlocked = true;
+    document.querySelectorAll('.SA_opening-timeline__audio-trigger').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const audio = document.getElementById(button.dataset.audioId);
+            if (!audio) return;
 
-        document.querySelectorAll('.SA_opening-timeline audio').forEach(function(audio) {
-            const wasMuted = audio.muted;
-            audio.muted = true;
-            const unlockAttempt = audio.play();
+            document.querySelectorAll('.SA_opening-timeline audio').forEach(function(otherAudio) {
+                if (otherAudio !== audio) otherAudio.pause();
+            });
 
-            if (unlockAttempt && typeof unlockAttempt.then === 'function') {
-                unlockAttempt.then(function() {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.muted = wasMuted;
-                }).catch(function() {
-                    timelineAudioUnlocked = false;
-                    audio.muted = wasMuted;
-                });
-            }
+            audio.dataset.segmentStart = button.dataset.audioStart || '0';
+            audio.dataset.segmentEnd = button.dataset.audioEnd || '';
+            audio.currentTime = Number(audio.dataset.segmentStart);
+            audio.hidden = false;
+            const note = button.parentNode.querySelector('.SA_opening-timeline__audio-note');
+            if (note) note.hidden = false;
+            button.hidden = true;
+
+            const playAttempt = audio.play();
+            if (playAttempt && typeof playAttempt.catch === 'function') playAttempt.catch(function() {});
         });
-    }
-
-    ['pointerdown', 'touchstart', 'keydown'].forEach(function(eventName) {
-        document.addEventListener(eventName, unlockTimelineAudio, { once: true, passive: true });
     });
 
     document.querySelectorAll('[data-timeline-sound]').forEach(function(button) {
@@ -333,8 +514,8 @@ function initializeEmsBeeswarmLegacy() {
     const context = canvas.getContext('2d');
     const maxSeconds = 8 * 60 * 60;
     const chartHeight = 7200;
-    const priorityOrder = ['0-PURPLE', '1-RED (ACP)', '2-RED (PCP)', '3-ORANGE', '4-YELLOW'];
-    const colourProperties = ['--bees-purple', '--bees-red-acp', '--bees-red-pcp', '--bees-orange', '--bees-yellow'];
+    const priorityOrder = ['0-PURPLE', '1-RED (COMBINED)', '3-ORANGE', '4-YELLOW'];
+    const colourProperties = ['--bees-purple', '--bees-red', '--bees-orange', '--bees-yellow'];
     const styles = getComputedStyle(chart.closest('.SA_ems-beeswarm'));
     const colours = Object.fromEntries(priorityOrder.map(function(priority, index) {
         return [priority, styles.getPropertyValue(colourProperties[index]).trim()];
@@ -521,10 +702,11 @@ function initializeEmsBeeswarm() {
     const loading = scrolly.querySelector('[data-ems-beeswarm-loading]');
     const steps = Array.from(scrolly.querySelectorAll('.SA_ems-beeswarm__step'));
     const context = canvas.getContext('2d');
-    const priorityOrder = ['0-PURPLE', '1-RED (ACP)', '2-RED (PCP)', '3-ORANGE', '4-YELLOW'];
-    const responseTargets = [360, 539, 539, 1500, 2700];
-    const meanArrivals = [537, 724, 786, 1598, 2516];
-    const colourProperties = ['--bees-purple', '--bees-red-acp', '--bees-red-pcp', '--bees-orange', '--bees-yellow'];
+    const priorityOrder = ['0-PURPLE', '1-RED (COMBINED)', '3-ORANGE', '4-YELLOW'];
+    const responseTargets = [360, 539, 1500, 2700];
+    const meanArrivals = [537, 752, 1598, 2516];
+    const p90Arrivals = [831, 1111, 2813, 5243];
+    const colourProperties = ['--bees-purple', '--bees-red', '--bees-orange', '--bees-yellow'];
     const chartStyles = getComputedStyle(scrolly.closest('.SA_ems-beeswarm'));
     const colours = Object.fromEntries(priorityOrder.map(function(priority, index) {
         return [priority, chartStyles.getPropertyValue(colourProperties[index]).trim()];
@@ -697,13 +879,22 @@ function initializeEmsBeeswarm() {
         }
         const startSeconds = Number(steps[from].dataset.seconds);
         const endSeconds = Number(steps[to].dataset.seconds);
-        const startLinear = steps[from].dataset.mode && steps[from].dataset.mode !== 'linear' ? 0 : 1;
-        const endLinear = steps[to].dataset.mode && steps[to].dataset.mode !== 'linear' ? 0 : 1;
+        const startMode = steps[from].dataset.mode;
+        const endMode = steps[to].dataset.mode;
+        const linearModes = ['linear', 'p90-actual', 'extreme'];
+        const startLinear = !startMode || linearModes.includes(startMode) ? 1 : 0;
+        const endLinear = !endMode || linearModes.includes(endMode) ? 1 : 0;
         const boundedAmount = Math.max(0, Math.min(1, amount));
+        const referenceProgress = startMode === 'p90-actual'
+            ? 1
+            : endMode === 'p90-actual'
+                ? boundedAmount * boundedAmount * (3 - 2 * boundedAmount)
+                : 0;
         return {
             step: steps[activeIndex],
             centreSeconds: startSeconds + (endSeconds - startSeconds) * boundedAmount,
-            linearAmount: startLinear + (endLinear - startLinear) * boundedAmount
+            linearAmount: startLinear + (endLinear - startLinear) * boundedAmount,
+            referenceProgress: referenceProgress
         };
     }
 
@@ -782,29 +973,59 @@ function initializeEmsBeeswarm() {
     }
 
     function drawIntroPanel(group, step, width, height) {
-        const boxWidth = Math.min(width - 32, 500);
-        const boxX = (width - boxWidth) / 2;
-        const textX = boxX + 18;
+        const edgePadding = width < 600 ? 24 : 40;
+        const boxWidth = Math.min(width - edgePadding * 2, 500);
         const textWidth = boxWidth - 36;
         const titleClass = 'SA_bees-annotation__title SA_bees-annotation__title--intro';
         const copyClass = 'SA_bees-annotation__copy SA_bees-annotation__copy--intro';
         const titleHeight = wrappedTextLines(step.dataset.title, textWidth, titleClass).length * 21;
         const copyHeight = wrappedTextLines(step.dataset.copy, textWidth, copyClass).length * 18;
         const boxHeight = 82 + titleHeight + copyHeight;
-        const boxY = Math.min(height - boxHeight - 24, Math.max(height / 2 + 24, height * 0.56));
+        const requestedPosition = step.dataset.panelPosition === 'high'
+            ? 'top-center'
+            : (step.dataset.panelPosition || 'bottom-center');
+        const positionParts = requestedPosition.split('-');
+        const verticalPosition = positionParts[0];
+        const horizontalPosition = positionParts[1] || 'center';
+        const topPadding = width < 600 ? 86 : 94;
+        const maximumBoxY = Math.max(topPadding, height - boxHeight - edgePadding);
+        const boxX = horizontalPosition === 'left'
+            ? edgePadding
+            : horizontalPosition === 'right'
+                ? width - boxWidth - edgePadding
+                : (width - boxWidth) / 2;
+        const boxY = verticalPosition === 'top'
+            ? topPadding
+            : verticalPosition === 'center'
+                ? Math.max(topPadding, Math.min(maximumBoxY, (height - boxHeight) / 2))
+                : maximumBoxY;
+        const textX = boxX + 18;
         group.appendChild(svgElement('rect', { x: boxX, y: boxY, width: boxWidth, height: boxHeight, rx: 3, class: 'SA_bees-annotation__box' }));
         addWrappedText(group, step.dataset.title, textX, boxY + 34, textWidth, titleClass, 21);
         addWrappedText(group, step.dataset.copy, textX, boxY + 48 + titleHeight, textWidth, 'SA_bees-annotation__copy SA_bees-annotation__copy--intro', 18);
     }
 
-    function drawReferenceOverlay(step, width, height, left, laneWidth, yScale, includePanel) {
+    function drawReferenceOverlay(step, width, height, left, laneWidth, yScale, includePanel, referenceProgress) {
         svg.replaceChildren();
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('aria-label', `${step.dataset.title}. ${step.dataset.copy}`);
-        const group = svgElement('g', { class: 'SA_bees-annotation' });
         const mode = step.dataset.mode;
-        const targetStages = { 'targets-purple': 1, 'targets-all': 5, means: 5, p90: 5, linear: 5 };
+        const isExtreme = mode === 'extreme';
+        const group = svgElement('g', { class: `SA_bees-annotation${isExtreme ? ' SA_bees-annotation--extreme' : ''}` });
+        const targetStages = { 'targets-purple': 1, 'targets-all': 4, means: 4, p90: 4, linear: 4, 'p90-actual': 4 };
         const targetCount = targetStages[mode] || 0;
+
+        if (isExtreme) {
+            const y = yScale(Number(step.dataset.seconds));
+            group.appendChild(svgElement('line', {
+                x1: left,
+                y1: y,
+                x2: left + laneWidth * priorityOrder.length,
+                y2: y,
+                class: 'SA_bees-annotation__extreme-line',
+                stroke: colours['1-RED (COMBINED)']
+            }));
+        }
 
         priorityOrder.forEach(function(priority, index) {
             if (index >= targetCount) return;
@@ -813,27 +1034,34 @@ function initializeEmsBeeswarm() {
             const x2 = centre + laneWidth * 0.43;
             const y = yScale(responseTargets[index]);
             const label = index === 0 ? 'TARGET PURPLE · 6:00'
-                : index === 1 ? 'TARGET RED ACP · 8:59'
-                : index === 2 ? 'TARGET RED PCP · 8:59'
-                : index === 3 ? 'TARGET ORANGE · 25:00'
+                : index === 1 ? 'TARGET RED · 8:59'
+                : index === 2 ? 'TARGET ORANGE · 25:00'
                 : 'TARGET YELLOW · 45:00';
             group.appendChild(svgElement('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'SA_bees-reference SA_bees-reference--target', stroke: colours[priority] }));
             const labelY = responseTargets[index] <= meanArrivals[index] ? y - 7 : y + 16;
             const text = svgElement('text', { x: centre, y: labelY, class: 'SA_bees-reference__label', fill: colours[priority] });
-            text.textContent = width < 600 ? label.replace(/TARGET (RED ACP|RED PCP|PURPLE|ORANGE|YELLOW)/, 'TARGET') : label;
+            text.textContent = width < 600 ? label.replace(/TARGET (RED|PURPLE|ORANGE|YELLOW)/, 'TARGET') : label;
             group.appendChild(text);
         });
 
-        if (mode === 'means' || mode === 'p90' || mode === 'linear') {
+        if (mode === 'means' || mode === 'p90' || mode === 'linear' || mode === 'p90-actual') {
+            const progress = Math.max(0, Math.min(1, Number(referenceProgress) || 0));
             priorityOrder.forEach(function(priority, index) {
                 const centre = left + laneWidth * (index + 0.5);
                 const x1 = centre - laneWidth * 0.43;
                 const x2 = centre + laneWidth * 0.43;
-                const y = yScale(meanArrivals[index]);
-                const labelY = meanArrivals[index] <= responseTargets[index] ? y - 7 : y + 16;
+                const displayedArrival = meanArrivals[index] + (p90Arrivals[index] - meanArrivals[index]) * progress;
+                const y = yScale(displayedArrival);
+                const labelY = displayedArrival <= responseTargets[index] ? y - 7 : y + 16;
                 const text = svgElement('text', { x: centre, y: labelY, class: 'SA_bees-reference__label SA_bees-reference__label--mean', fill: colours[priority] });
+                if (progress > 0) {
+                    const meanY = yScale(meanArrivals[index]);
+                    group.appendChild(svgElement('line', { x1: x1, y1: meanY, x2: x2, y2: meanY, class: 'SA_bees-reference SA_bees-reference--mean-origin' }));
+                }
                 group.appendChild(svgElement('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'SA_bees-reference SA_bees-reference--mean', stroke: colours[priority] }));
-                text.textContent = `AVERAGE · ${formatDuration(meanArrivals[index])}`;
+                text.textContent = progress > 0.5
+                    ? `P90 · ${formatDuration(p90Arrivals[index])}`
+                    : `AVERAGE · ${formatDuration(meanArrivals[index])}`;
                 group.appendChild(text);
             });
         }
@@ -872,6 +1100,7 @@ function initializeEmsBeeswarm() {
         context.fillRect(0, 0, width, height);
         context.font = '700 9px "JetBrains Mono", monospace';
         context.textBaseline = 'middle';
+        context.lineWidth = 1;
 
         priorityOrder.forEach(function(priority, index) {
             const centre = left + laneWidth * (index + 0.5);
@@ -901,7 +1130,10 @@ function initializeEmsBeeswarm() {
         tickValues.forEach(function(seconds) {
             const y = yScale(seconds);
             if (y < top || y > bottom) return;
-            context.strokeStyle = seconds % 3600 === 0 ? 'rgba(255,255,255,0.24)' : 'rgba(255,255,255,0.1)';
+            const isHour = seconds % 3600 === 0;
+            context.strokeStyle = chartStyles.getPropertyValue(isHour ? '--bees-hour-time-line' : '--bees-minor-time-line').trim()
+                || (isHour ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.1)');
+            context.lineWidth = isHour ? 2 : 1;
             context.beginPath();
             context.moveTo(left, y);
             context.lineTo(right, y);
@@ -912,7 +1144,7 @@ function initializeEmsBeeswarm() {
         });
 
         if (state.step.dataset.mode) {
-            drawReferenceOverlay(state.step, width, height, left, laneWidth, yScale);
+            drawReferenceOverlay(state.step, width, height, left, laneWidth, yScale, state.step.dataset.hidePanel !== 'true', state.referenceProgress);
         } else {
             const targetPriority = state.step.dataset.priority;
             const targetSeconds = Number(state.step.dataset.seconds);
@@ -924,7 +1156,7 @@ function initializeEmsBeeswarm() {
                     title: '',
                     copy: ''
                 }
-            }, width, height, left, laneWidth, yScale, false);
+            }, width, height, left, laneWidth, yScale, false, 1);
             const priorityIndex = priorityOrder.indexOf(targetPriority);
             const targetRank = hashNumber(state.step.dataset.callId) % targetGroup.count;
             const targetPosition = dotPosition(targetPriority, targetSeconds, targetGroup.count, targetRank);
@@ -946,7 +1178,7 @@ function initializeEmsBeeswarm() {
         });
     }
 
-    fetch('images/data/priority_response_beeswarm_by_priority_time.csv')
+    fetch('images/data/priority_response_beeswarm_by_priority_time_combinedRed.csv')
         .then(function(response) {
             if (!response.ok) throw new Error(`Unable to load beeswarm data (${response.status})`);
             return response.text();
@@ -976,14 +1208,16 @@ function initializeEmsDataCharts() {
     if (!figures.length) return;
 
     const files = {
-        targets: 'images/data/slow_response_by_priority.csv',
-        emergencies: 'images/data/response_time_by_problem_and_priority.csv',
+        targets: 'images/data/slow_response_by_priority_combinedRed.csv',
+        emergencies: 'images/data/response_time_by_problem_and_priority_combinedRed.csv',
         escalation: 'images/data/priority_escalation_summary.csv',
-        trends: 'images/data/response_time_trend_by_priority.csv',
+        trends: 'images/data/response_time_trend_by_priority_combinedRed.csv',
         availability: 'images/data/ambulance_availability.csv',
         hourly: 'images/data/response_time_by_hour.csv',
         staffing: 'images/data/paramedic_hiring_departures.csv',
-        hospital: 'images/data/paramedic_shift_time.csv'
+        hospital: 'images/data/paramedic_shift_time.csv',
+        'multi-hour': 'images/data/multi_hour_calls_combinedRed.csv',
+        'fall-waits': 'images/data/fall_long_waits.csv'
     };
     const data = {};
     let resizeTimer;
@@ -1046,6 +1280,7 @@ function initializeEmsDataCharts() {
         return {
             priorities: {
                 '0-PURPLE': styles.getPropertyValue('--chart-purple').trim(),
+                '1-RED (COMBINED)': styles.getPropertyValue('--chart-red').trim(),
                 '1-RED (ACP)': styles.getPropertyValue('--chart-red-acp').trim(),
                 '2-RED (PCP)': styles.getPropertyValue('--chart-red-pcp').trim(),
                 '3-ORANGE': styles.getPropertyValue('--chart-orange').trim(),
@@ -1065,9 +1300,12 @@ function initializeEmsDataCharts() {
     }
 
     function bindChartTooltip(node, mount, label, guide) {
+        const accessibleLabel = Array.isArray(label)
+            ? label.map(function(line) { return line.text; }).join('. ')
+            : label;
         node.setAttribute('data-chart-tooltip', 'true');
         node.setAttribute('tabindex', '0');
-        node.setAttribute('aria-label', label);
+        node.setAttribute('aria-label', accessibleLabel);
 
         function tooltip() {
             let element = mount.querySelector('.SA_ems-data-chart__tooltip');
@@ -1085,12 +1323,30 @@ function initializeEmsDataCharts() {
             const bounds = mount.getBoundingClientRect();
             const x = Math.max(16, Math.min(bounds.width - 16, clientX - bounds.left));
             const y = Math.max(18, clientY - bounds.top);
-            element.textContent = label;
-            element.style.left = `${x}px`;
+            if (Array.isArray(label)) {
+                element.replaceChildren(...label.map(function(line) {
+                    const item = document.createElement('span');
+                    item.className = 'SA_ems-data-chart__tooltip-line';
+                    item.textContent = line.text;
+                    if (line.colour) item.style.color = line.colour;
+                    return item;
+                }));
+            } else {
+                element.textContent = label;
+            }
+            element.classList.add('SA_ems-data-chart__tooltip--visible');
+            const gap = 12;
+            const edgePadding = 8;
+            const tooltipWidth = element.offsetWidth;
+            const preferredLeft = x > bounds.width / 2
+                ? x - tooltipWidth - gap
+                : x + gap;
+            const maximumLeft = Math.max(edgePadding, bounds.width - tooltipWidth - edgePadding);
+            const clampedLeft = Math.max(edgePadding, Math.min(maximumLeft, preferredLeft));
+            element.style.left = `${clampedLeft}px`;
             element.style.top = `${y}px`;
             element.classList.toggle('SA_ems-data-chart__tooltip--left', x > bounds.width / 2);
             element.classList.toggle('SA_ems-data-chart__tooltip--right', x <= bounds.width / 2);
-            element.classList.add('SA_ems-data-chart__tooltip--visible');
             if (guide) {
                 guide.node.setAttribute('x1', guide.x);
                 guide.node.setAttribute('x2', guide.x);
@@ -1118,6 +1374,7 @@ function initializeEmsDataCharts() {
     function shortPriority(priority) {
         return ({
             '0-PURPLE': 'Purple',
+            '1-RED (COMBINED)': 'Red',
             '1-RED (ACP)': 'Red ACP',
             '2-RED (PCP)': 'Red PCP',
             '3-ORANGE': 'Orange',
@@ -1151,6 +1408,15 @@ function initializeEmsDataCharts() {
             chart.svg.appendChild(bar);
             bindChartTooltip(bar, mount, `${shortPriority(row['Final Priority'])}: ${rate.toFixed(1)}% missed the ${row['Threshold Applied']} response goal (${Number(row.Slow).toLocaleString()} of ${Number(row.Total).toLocaleString()} calls).`);
             addText(chart.svg, Math.min(right - 2, left + barWidth + 8), y + 5, `${rate.toFixed(1)}%`, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': left + barWidth + 52 > right ? 'end' : 'start' });
+
+            const unchangedRate = Number(row['Unchanged Slow Rate (%)']);
+            const unchangedWidth = (right - left) * unchangedRate / 100;
+            const unchangedY = y + 22;
+            chart.svg.appendChild(svgNode('line', { x1: left, x2: right, y1: unchangedY, y2: unchangedY, stroke: palette.white, 'stroke-width': 2, 'stroke-opacity': 0.12 }));
+            const unchangedLine = svgNode('line', { x1: left, x2: left + unchangedWidth, y1: unchangedY, y2: unchangedY, stroke: palette.priorities[row['Final Priority']], 'stroke-width': 4 });
+            chart.svg.appendChild(unchangedLine);
+            bindChartTooltip(unchangedLine, mount, `${shortPriority(row['Final Priority'])}, unchanged priority: ${unchangedRate.toFixed(1)}% missed the response goal (${Number(row['Unchanged Slow']).toLocaleString()} of ${Number(row['Unchanged Total']).toLocaleString()} calls).`);
+            addText(chart.svg, Math.min(right, left + unchangedWidth + 7), unchangedY + 4, `Unchanged ${unchangedRate.toFixed(1)}%`, { fill: palette.white, 'font-size': 9, 'font-weight': 700, 'text-anchor': left + unchangedWidth + 88 > right ? 'end' : 'start' });
         });
     }
 
@@ -1186,7 +1452,7 @@ function initializeEmsDataCharts() {
             addText(chart.svg, left - 12, y + 4, labels[row['Problem (Short)']] || row['Problem (Short)'], { fill: palette.white, 'font-size': compact ? 10 : 12, 'font-weight': 700, 'text-anchor': 'end' });
             chart.svg.appendChild(svgNode('line', { x1: medianX, x2: p90X, y1: y, y2: y, stroke: palette.white, 'stroke-width': 2, 'stroke-opacity': 0.65 }));
             const medianPoint = svgNode('circle', { cx: medianX, cy: y, r: 6, fill: palette.white });
-            const p90Point = svgNode('circle', { cx: p90X, cy: y, r: 8, fill: palette.priorities['1-RED (ACP)'], stroke: palette.white, 'stroke-width': 1.5 });
+            const p90Point = svgNode('circle', { cx: p90X, cy: y, r: 8, fill: palette.priorities['1-RED (COMBINED)'], stroke: palette.white, 'stroke-width': 1.5 });
             chart.svg.appendChild(medianPoint);
             chart.svg.appendChild(p90Point);
             const problemLabel = labels[row['Problem (Short)']] || row['Problem (Short)'];
@@ -1208,7 +1474,7 @@ function initializeEmsDataCharts() {
         const right = chart.width - 18;
         const y = 62;
         const barHeight = 52;
-        const colours = { Escalated: palette.priorities['1-RED (ACP)'], 'De-escalated': palette.priorities['4-YELLOW'], Unchanged: palette.muted };
+        const colours = { Escalated: palette.priorities['1-RED (COMBINED)'], 'De-escalated': palette.priorities['4-YELLOW'], Unchanged: palette.muted };
         let x = left;
 
         known.forEach(function(row) {
@@ -1239,7 +1505,7 @@ function initializeEmsDataCharts() {
         const top = 55;
         const maximum = 7000;
         const measures = Array.from(new Set(rows.map(function(row) { return row.Measure; })));
-        const yearColours = { '2019': palette.muted, '2023': palette.priorities['1-RED (ACP)'] };
+        const yearColours = { '2019': palette.muted, '2023': palette.priorities['1-RED (COMBINED)'] };
 
         [0, 2000, 4000, 6000].forEach(function(value) {
             const x = left + (right - left) * value / maximum;
@@ -1272,7 +1538,7 @@ function initializeEmsDataCharts() {
         const bottom = 225;
         const maximum = 180;
         const groupWidth = (right - left) / rows.length;
-        const colours = { Hired: palette.priorities['4-YELLOW'], Departed: palette.priorities['1-RED (ACP)'] };
+        const colours = { Hired: palette.priorities['4-YELLOW'], Departed: palette.priorities['1-RED (COMBINED)'] };
 
         [0, 50, 100, 150].forEach(function(value) {
             const y = bottom - (bottom - top) * value / maximum;
@@ -1300,22 +1566,117 @@ function initializeEmsDataCharts() {
         const mount = figure.querySelector('[data-chart-mount]');
         const palette = chartPalette(figure);
         const chart = createSvg(mount, figure.classList.contains('SA_ems-data-chart--float') ? 270 : 310);
-        const cellSize = Math.min(32, (chart.width - 70) / 10);
-        const gap = 5;
-        const gridWidth = cellSize * 10 + gap * 9;
-        const startX = (chart.width - gridWidth) / 2;
-        const startY = 40;
         const hospitalShare = Number((rows.find(function(row) { return row.Activity === 'In hospital'; }) || {})['Share (%)']);
+        const centreX = chart.width / 2;
+        const centreY = chart.height / 2;
+        const radius = Math.min(86, chart.height * 0.31);
+        const strokeWidth = Math.max(24, radius * 0.34);
+        const sharedAttributes = {
+            cx: centreX,
+            cy: centreY,
+            r: radius,
+            fill: 'none',
+            'stroke-width': strokeWidth,
+            'pathLength': 100,
+            transform: `rotate(-90 ${centreX} ${centreY})`
+        };
+        const remaining = svgNode('circle', Object.assign({}, sharedAttributes, {
+            stroke: palette.white,
+            'stroke-opacity': 0.22
+        }));
+        const hospital = svgNode('circle', Object.assign({}, sharedAttributes, {
+            stroke: palette.priorities['1-RED (COMBINED)'],
+            'stroke-dasharray': `${hospitalShare} ${100 - hospitalShare}`,
+            'stroke-linecap': 'butt'
+        }));
+        chart.svg.append(remaining, hospital);
+        bindChartTooltip(remaining, mount, `${100 - hospitalShare}% remains for travel, on-scene response and other duties.`);
+        bindChartTooltip(hospital, mount, `${hospitalShare}% of an average paramedic shift is spent in hospital.`);
 
-        for (let index = 0; index < 100; index += 1) {
-            const hospital = index < hospitalShare;
-            const x = startX + (index % 10) * (cellSize + gap);
-            const y = startY + Math.floor(index / 10) * (cellSize / 2 + gap);
-            const cell = svgNode('rect', { x: x, y: y, width: cellSize, height: cellSize / 2, rx: 2, fill: hospital ? palette.priorities['1-RED (ACP)'] : palette.white, 'fill-opacity': hospital ? 1 : 0.22 });
-            chart.svg.appendChild(cell);
-            bindChartTooltip(cell, mount, hospital ? '60% of an average paramedic shift is spent in hospital.' : '40% remains for travel, on-scene response and other duties.');
-        }
-        addText(chart.svg, chart.width / 2, chart.height - 12, '60% spent in hospital', { fill: palette.white, 'font-size': 15, 'font-weight': 800, 'text-anchor': 'middle' });
+        const centreLabel = svgNode('text', {
+            x: centreX,
+            y: centreY - 5,
+            fill: palette.white,
+            'font-weight': 800,
+            'text-anchor': 'middle'
+        });
+        const percentage = svgNode('tspan', { x: centreX, 'font-size': 27 }, `${hospitalShare}%`);
+        const description = svgNode('tspan', { x: centreX, dy: 23, 'font-size': 12 }, 'spent in hospital');
+        centreLabel.append(percentage, description);
+        chart.svg.appendChild(centreLabel);
+    }
+
+    function renderMultiHour(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const legend = figure.querySelector('[data-chart-legend]');
+        const palette = chartPalette(figure);
+        const priorities = ['0-PURPLE', '1-RED (COMBINED)', '3-ORANGE', '4-YELLOW'];
+        const chart = createSvg(mount, 300);
+        const left = 66;
+        const right = chart.width - 16;
+        const top = 36;
+        const rowGap = 48;
+        const maximum = Math.max.apply(null, rows.map(function(row) { return Number(row.Total); }));
+
+        legend.replaceChildren(...priorities.map(function(priority) {
+            const item = document.createElement('span');
+            const dot = document.createElement('i');
+            dot.style.background = palette.priorities[priority];
+            item.append(dot, document.createTextNode(shortPriority(priority)));
+            return item;
+        }));
+
+        rows.forEach(function(row, rowIndex) {
+            const y = top + rowIndex * rowGap;
+            const totalWidth = (right - left) * Number(row.Total) / maximum;
+            addText(chart.svg, left - 9, y + 5, row.Threshold, { fill: palette.white, 'font-size': 11, 'font-weight': 800, 'text-anchor': 'end' });
+            chart.svg.appendChild(svgNode('rect', { x: left, y: y - 10, width: right - left, height: 20, fill: palette.white, 'fill-opacity': 0.08, rx: 2 }));
+            let x = left;
+            priorities.forEach(function(priority) {
+                const count = Number(row[priority]);
+                if (!count) return;
+                const width = totalWidth * count / Number(row.Total);
+                const segment = svgNode('rect', { x: x, y: y - 10, width: Math.max(1, width), height: 20, fill: palette.priorities[priority] });
+                chart.svg.appendChild(segment);
+                bindChartTooltip(segment, mount, `${row.Threshold} or longer · ${shortPriority(priority)}: ${count.toLocaleString()} calls.`);
+                x += width;
+            });
+            addText(chart.svg, Math.min(right, left + totalWidth + 7), y + 5, Number(row.Total).toLocaleString(), {
+                fill: palette.white,
+                'font-size': 11,
+                'font-weight': 800,
+                'text-anchor': left + totalWidth + 48 > right ? 'end' : 'start'
+            });
+        });
+    }
+
+    function renderFallWaits(figure, rows) {
+        const mount = figure.querySelector('[data-chart-mount]');
+        const palette = chartPalette(figure);
+        const chart = createSvg(mount, 220);
+        const left = 76;
+        const right = chart.width - 22;
+        const top = 62;
+        const rowGap = 74;
+        const maximum = Math.max.apply(null, rows.map(function(row) { return Number(row.Count); }));
+        const colours = [palette.priorities['3-ORANGE'], palette.priorities['1-RED (COMBINED)']];
+
+        rows.forEach(function(row, index) {
+            const count = Number(row.Count);
+            const y = top + index * rowGap;
+            const width = (right - left) * count / maximum;
+            addText(chart.svg, left - 10, y + 6, `${row.Threshold}+`, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': 'end' });
+            chart.svg.appendChild(svgNode('rect', { x: left, y: y - 13, width: right - left, height: 26, fill: palette.white, 'fill-opacity': 0.08, rx: 2 }));
+            const bar = svgNode('rect', { x: left, y: y - 13, width: Math.max(2, width), height: 26, fill: colours[index], rx: 2 });
+            chart.svg.appendChild(bar);
+            addText(chart.svg, Math.min(right, left + width + 8), y + 6, count.toLocaleString(), {
+                fill: palette.white,
+                'font-size': 13,
+                'font-weight': 800,
+                'text-anchor': left + width + 48 > right ? 'end' : 'start'
+            });
+            bindChartTooltip(bar, mount, `${count.toLocaleString()} calls involving falls had an ambulance response time of ${row.Threshold} or longer.`);
+        });
     }
 
     function renderHourly(figure, rows) {
@@ -1331,7 +1692,7 @@ function initializeEmsDataCharts() {
         const maxCalls = 18000;
         const maxMinutes = 70;
         const callColour = palette.priorities['4-YELLOW'];
-        const timeColour = palette.priorities['1-RED (ACP)'];
+        const timeColour = palette.priorities['1-RED (COMBINED)'];
 
         legend.replaceChildren();
         [['Calls received', callColour], ['P90 response', timeColour]].forEach(function(item) {
@@ -1360,7 +1721,7 @@ function initializeEmsDataCharts() {
             const timeY = bottom - (bottom - top) * minutes / maxMinutes;
             callPoints.push(`${x},${callsY}`);
             timePoints.push(`${x},${timeY}`);
-            if (index % 3 === 0) addText(chart.svg, x, bottom + 25, `${String(index).padStart(2, '0')}:00`, { fill: palette.white, 'font-size': 10, 'text-anchor': 'middle' });
+            if (index % 3 === 0) addText(chart.svg, x, bottom + 25, String(index), { fill: palette.white, 'font-size': 10, 'text-anchor': 'middle' });
         });
         chart.svg.appendChild(svgNode('polyline', { points: callPoints.join(' '), fill: 'none', stroke: callColour, 'stroke-width': 3, 'stroke-linejoin': 'round' }));
         chart.svg.appendChild(svgNode('polyline', { points: timePoints.join(' '), fill: 'none', stroke: timeColour, 'stroke-width': 3, 'stroke-linejoin': 'round' }));
@@ -1380,18 +1741,18 @@ function initializeEmsDataCharts() {
     }
 
     function renderTrends(figure, rows) {
-        const priorities = ['0-PURPLE', '1-RED (ACP)', '2-RED (PCP)', '3-ORANGE', '4-YELLOW'];
+        const priorities = ['0-PURPLE', '1-RED (COMBINED)', '3-ORANGE', '4-YELLOW'];
         const mount = figure.querySelector('[data-chart-mount]');
         const legend = figure.querySelector('[data-chart-legend]');
         const palette = chartPalette(figure);
         const compact = mount.getBoundingClientRect().width < 540;
         const chart = createSvg(mount, compact ? 430 : 500);
         const left = compact ? 45 : 62;
-        const right = chart.width - 24;
+        const right = chart.width - (compact ? 45 : 62);
         const top = 28;
         const bottom = chart.height - 58;
         const months = Array.from(new Set(rows.map(function(row) { return row['Year-Month']; }))).sort();
-        const maximum = Math.ceil(Math.max.apply(null, rows.filter(function(row) { return priorities.includes(row['Final Priority']); }).map(function(row) { return Number(row['P90 (sec)']) / 60; })) / 10) * 10;
+        const maximum = Math.ceil(Math.max.apply(null, rows.filter(function(row) { return priorities.includes(row['Final Priority']); }).map(function(row) { return Number(row['Mean (sec)']) / 60; })) / 10) * 10;
         const monthNames = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
 
         function formatMonth(month) {
@@ -1426,13 +1787,13 @@ function initializeEmsDataCharts() {
             }).filter(Boolean);
             const points = series.map(function(row, index) {
                 const x = left + (right - left) * index / Math.max(1, months.length - 1);
-                const y = bottom - (bottom - top) * (Number(row['P90 (sec)']) / 60) / maximum;
+                const y = bottom - (bottom - top) * (Number(row['Mean (sec)']) / 60) / maximum;
                 return `${x},${y}`;
             }).join(' ');
             chart.svg.appendChild(svgNode('polyline', { points: points, fill: 'none', stroke: palette.priorities[priority], 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
             series.forEach(function(row, index) {
                 const x = left + (right - left) * index / Math.max(1, months.length - 1);
-                const minutes = Number(row['P90 (sec)']) / 60;
+                const minutes = Number(row['Mean (sec)']) / 60;
                 const y = bottom - (bottom - top) * minutes / maximum;
                 const point = svgNode('circle', { cx: x, cy: y, r: compact ? 4 : 5, fill: palette.priorities[priority], stroke: palette.white, 'stroke-width': 1 });
                 chart.svg.appendChild(point);
@@ -1447,10 +1808,13 @@ function initializeEmsDataCharts() {
             const monthRows = priorities.map(function(priority) {
                 return rows.find(function(row) { return row['Year-Month'] === month && row['Final Priority'] === priority; });
             }).filter(Boolean);
-            const tooltipText = [formatMonth(month)].concat(monthRows.map(function(row) {
-                const minutes = Number(row['P90 (sec)']) / 60;
-                return `${shortPriority(row['Final Priority'])}: ${minutes.toFixed(1)} min P90 · ${Number(row.Count).toLocaleString()} calls`;
-            })).join('\n');
+            const tooltipText = [{ text: formatMonth(month) }].concat(monthRows.map(function(row) {
+                const minutes = Number(row['Mean (sec)']) / 60;
+                return {
+                    text: `${shortPriority(row['Final Priority'])}: ${minutes.toFixed(1)} min average · ${Number(row.Count).toLocaleString()} calls`,
+                    colour: palette.priorities[row['Final Priority']]
+                };
+            }));
             const hitArea = svgNode('rect', {
                 x: Math.max(left, x - monthSpacing / 2),
                 y: top,
@@ -1474,6 +1838,8 @@ function initializeEmsDataCharts() {
         if (type === 'hourly') renderHourly(figure, data[type]);
         if (type === 'staffing') renderStaffing(figure, data[type]);
         if (type === 'hospital') renderHospital(figure, data[type]);
+        if (type === 'multi-hour') renderMultiHour(figure, data[type]);
+        if (type === 'fall-waits') renderFallWaits(figure, data[type]);
     }
 
     Promise.all(Object.entries(files).map(function(entry) {

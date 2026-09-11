@@ -139,7 +139,7 @@ function purge() {
 
 //  fileInclude
 function html() {
-    return applyPlumber(gulp.src('app/index.html'), 'html')
+    return applyPlumber(gulp.src(['app/index.html', 'app/graphics/*.html'], { base: 'app' }), 'html')
         .pipe(fileinclude({
             prefix: '@@',
             basepath: '@file'
@@ -320,6 +320,15 @@ function copyModulesScripts() {
         .pipe(plumber())
         .pipe(gulp.dest("dist/js/modules"))
     );
+}
+
+function copyGraphicsHtml() {
+    return applyPlumber(gulp.src('app/graphics/*.html', { base: 'app' }), 'copyGraphicsHtml')
+        .pipe(fileinclude({
+            prefix: '@@',
+            basepath: '@file'
+        }))
+        .pipe(gulp.dest('dist/'));
 }
 
 // Transpile, concatenate and minify scripts
@@ -528,7 +537,7 @@ function setLive(done) {
 }
 
 // define complex tasks
-const js = gulp.series(scripts, copyModulesScripts, addSrcset);
+const js = gulp.series(scripts, copyModulesScripts, copyGraphicsHtml, addSrcset);
 const jsLive = gulp.series(scriptsLive, copyModulesScripts, addSrcset);
 const images = gulp.parallel(moveImages, resizeImages);
 const rebuild = gulp.series(fullClean, gulp.parallel(css, images, js), localURI);

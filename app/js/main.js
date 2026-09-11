@@ -211,10 +211,8 @@ class ScrollContainer {
             className: 'SA_scrollypadding'
         });
         
-        const lastElementHeight = this.element.lastElementChild.querySelector(".SA_scroll-text").offsetHeight;
-        
-        // Set padding to 50vh + 2px (border adjustment)
-        scrollyTellingPadding.style.height = (window.innerHeight * 0.5) + 2 + "px";
+        // No trailing spacer for this project.
+        scrollyTellingPadding.style.height = "0px";
         this.element.appendChild(scrollyTellingPadding);
     }
 

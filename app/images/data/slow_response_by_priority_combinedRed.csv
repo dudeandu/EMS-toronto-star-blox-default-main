@@ -1,0 +1,5 @@
+Final Priority,Total,Slow,On Time,Slow Rate (%),Threshold Applied,Unchanged Total,Unchanged Slow,Unchanged Slow Rate (%)
+0-PURPLE,8160,5975,2185,73.2,360s (06:00),122,85,69.7
+1-RED (COMBINED),111700,70456,41244,63.1,539s (08:59),737,406,55.1
+3-ORANGE,140222,51938,88284,37.0,1500s (25:00),2846,1406,49.4
+4-YELLOW,55427,16235,39192,29.3,2700s (45:00),630,230,36.5

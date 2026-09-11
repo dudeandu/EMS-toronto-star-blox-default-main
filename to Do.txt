@@ -1,0 +1,22 @@
+Add “we’ve condensed the audio"
+~~CUT: Dispatcher: “Okay, I apologize for the delay.”~~
+~~Add dispatcher word on “unfortunately…”~~
+~~Take out lines~~
+~~Byline links clicky things~~
+~~Cut space between slide and headline~~
+~~Move “Most of the highest-priority calls missed the target” Photo instead maybe~~
+
+BEESWARM:
+~~P90 add average, and slide that moves the average and turns into the P90 average~~
+~~Remove log slide nonsense~~
+~~Update text annotations~~
+~~Update the line colour for every 3, 4, 5 hour slide mark~~
+
+~~After “When responses bleed long, muscle dies and patients suffer” add the “Most of the highest-priority calls missed the target” graphic ~~
+~~On “Most of the highest-priority calls missed the target” add a thin line with unchanged calls~~
+~~CUT: “Even life-threatening calls can have long waits”~~
+~~CUT and MOVE: “Periods with few—or no—available ambulances surged”~~
+~~CUT and MOVE: “Demand and response times change hour by hour” and replace with departures one~~
+~~MOVE: “New hires were offset by paramedics leaving” move to “”Periods with few—or no—available ambulances surged”"~~
+~~MAKE this one full width “Thousands of calls stretched beyond an hour”~~
+~~CUT: “Response times shifted differently by priority”~~
