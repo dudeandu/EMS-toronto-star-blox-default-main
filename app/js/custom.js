@@ -250,6 +250,65 @@ function stopOpeningTimelineAudio() {
     });
 }
 
+function initializeOpeningAudioPlayer(audio) {
+    const player = document.createElement('div');
+    player.className = 'SA_opening-timeline__custom-player';
+    player.hidden = true;
+    player.innerHTML = '<button class="SA_opening-timeline__player-toggle" type="button" aria-label="Play audio">▶</button><input class="SA_opening-timeline__player-progress" type="range" min="0" max="1" step="0.01" value="0" aria-label="Audio progress"><output class="SA_opening-timeline__player-time">0:00 / 0:00</output><button class="SA_opening-timeline__player-mute" type="button" aria-label="Mute audio" aria-pressed="false">Sound on</button>';
+    audio.insertAdjacentElement('afterend', player);
+
+    const toggle = player.querySelector('.SA_opening-timeline__player-toggle');
+    const progress = player.querySelector('.SA_opening-timeline__player-progress');
+    const time = player.querySelector('.SA_opening-timeline__player-time');
+    const mute = player.querySelector('.SA_opening-timeline__player-mute');
+
+    function formatAudioTime(value) {
+        const seconds = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+        return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    }
+
+    function limits() {
+        const start = Number(audio.dataset.segmentStart) || 0;
+        const requestedEnd = Number(audio.dataset.segmentEnd);
+        const end = requestedEnd > start ? requestedEnd : (Number.isFinite(audio.duration) ? audio.duration : start);
+        return { start: start, end: end };
+    }
+
+    function updatePlayer() {
+        const range = limits();
+        const duration = Math.max(0, range.end - range.start);
+        const elapsed = Math.max(0, Math.min(duration, audio.currentTime - range.start));
+        progress.max = String(duration || 1);
+        progress.value = String(elapsed);
+        progress.style.setProperty('--audio-progress', `${duration ? elapsed / duration * 100 : 0}%`);
+        time.textContent = `${formatAudioTime(elapsed)} / ${formatAudioTime(duration)}`;
+        toggle.textContent = audio.paused ? '▶' : 'Ⅱ';
+        toggle.setAttribute('aria-label', audio.paused ? 'Play audio' : 'Pause audio');
+        mute.textContent = audio.muted ? 'Sound off' : 'Sound on';
+        mute.setAttribute('aria-label', audio.muted ? 'Unmute audio' : 'Mute audio');
+        mute.setAttribute('aria-pressed', audio.muted ? 'true' : 'false');
+    }
+
+    toggle.addEventListener('click', function() {
+        if (audio.paused) audio.play().catch(function() {});
+        else audio.pause();
+    });
+    progress.addEventListener('input', function() {
+        audio.currentTime = limits().start + Number(progress.value);
+        updatePlayer();
+    });
+    mute.addEventListener('click', function() {
+        audio.muted = !audio.muted;
+        updatePlayer();
+    });
+    ['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended', 'volumechange'].forEach(function(eventName) {
+        audio.addEventListener(eventName, updatePlayer);
+    });
+
+    audio.SAPlayer = { element: player, update: updatePlayer };
+    updatePlayer();
+}
+
 function initializeOpeningCallReader(openingTimeline) {
     if (!openingTimeline) return;
 
@@ -427,6 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.SA_opening-timeline audio').forEach(function(audio) {
         audio.muted = false;
+        initializeOpeningAudioPlayer(audio);
         audio.addEventListener('timeupdate', function() {
             updateTimelineTranscript(audio);
             if (audio.dataset.segmentEnd && audio.currentTime >= Number(audio.dataset.segmentEnd)) audio.pause();
@@ -445,7 +505,10 @@ document.addEventListener('DOMContentLoaded', function() {
             audio.dataset.segmentStart = button.dataset.audioStart || '0';
             audio.dataset.segmentEnd = button.dataset.audioEnd || '';
             audio.currentTime = Number(audio.dataset.segmentStart);
-            audio.hidden = false;
+            if (audio.SAPlayer) {
+                audio.SAPlayer.element.hidden = false;
+                audio.SAPlayer.update();
+            }
             const note = button.parentNode.querySelector('.SA_opening-timeline__audio-note');
             if (note) note.hidden = false;
             button.hidden = true;
@@ -1216,7 +1279,7 @@ function initializeEmsDataCharts() {
         hourly: 'images/data/response_time_by_hour.csv',
         staffing: 'images/data/paramedic_hiring_departures.csv',
         hospital: 'images/data/paramedic_shift_time.csv',
-        'multi-hour': 'images/data/multi_hour_calls_combinedRed.csv',
+        'multi-hour': 'images/data/priority_response_beeswarm_by_priority_time_combinedRed.csv',
         'fall-waits': 'images/data/fall_long_waits.csv'
     };
     const data = {};
@@ -1287,6 +1350,7 @@ function initializeEmsDataCharts() {
                 '4-YELLOW': styles.getPropertyValue('--chart-yellow').trim()
             },
             white: styles.getPropertyValue('--chart-white').trim(),
+            background: styles.getPropertyValue('--chart-background').trim(),
             muted: styles.getPropertyValue('--chart-muted').trim(),
             grid: styles.getPropertyValue('--chart-grid').trim()
         };
@@ -1611,12 +1675,49 @@ function initializeEmsDataCharts() {
         const legend = figure.querySelector('[data-chart-legend]');
         const palette = chartPalette(figure);
         const priorities = ['0-PURPLE', '1-RED (COMBINED)', '3-ORANGE', '4-YELLOW'];
-        const chart = createSvg(mount, 300);
-        const left = 66;
-        const right = chart.width - 16;
-        const top = 36;
-        const rowGap = 48;
-        const maximum = Math.max.apply(null, rows.map(function(row) { return Number(row.Total); }));
+        const compact = mount.getBoundingClientRect().width < 560;
+        const width = Math.max(320, Math.round(mount.getBoundingClientRect().width));
+        const height = compact ? 390 : 430;
+        const pixelRatio = Math.min(2, window.devicePixelRatio || 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(width * pixelRatio);
+        canvas.height = Math.round(height * pixelRatio);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        canvas.setAttribute('aria-hidden', 'true');
+        mount.replaceChildren(canvas);
+        const context = canvas.getContext('2d');
+        context.scale(pixelRatio, pixelRatio);
+        const left = compact ? 58 : 82;
+        const right = width - (compact ? 14 : 24);
+        const top = 48;
+        const bottom = height - 48;
+        const laneHeight = (bottom - top) / priorities.length;
+        const minimumSeconds = 3600;
+        const maximumSeconds = 8 * 3600;
+        const pointIndex = new Map();
+        const occupancy = new Map();
+        const hourlyTotals = new Map();
+
+        rows.forEach(function(row) {
+            const priority = row['Final Priority'];
+            const seconds = Number(row['Response Time (sec)']);
+            const count = Number(row.Count);
+            if (!priorities.includes(priority) || seconds < minimumSeconds || !count) return;
+            const hour = Math.min(8, Math.floor(seconds / 3600));
+            hourlyTotals.set(hour, (hourlyTotals.get(hour) || 0) + count);
+        });
+
+        function xScale(seconds) {
+            return left + (right - left) * Math.max(0, Math.min(1, (seconds - minimumSeconds) / (maximumSeconds - minimumSeconds)));
+        }
+
+        function responseLabel(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainder = seconds % 60;
+            return `${hours} hr ${minutes} min ${remainder} sec`;
+        }
 
         legend.replaceChildren(...priorities.map(function(priority) {
             const item = document.createElement('span');
@@ -1626,28 +1727,122 @@ function initializeEmsDataCharts() {
             return item;
         }));
 
-        rows.forEach(function(row, rowIndex) {
-            const y = top + rowIndex * rowGap;
-            const totalWidth = (right - left) * Number(row.Total) / maximum;
-            addText(chart.svg, left - 9, y + 5, row.Threshold, { fill: palette.white, 'font-size': 11, 'font-weight': 800, 'text-anchor': 'end' });
-            chart.svg.appendChild(svgNode('rect', { x: left, y: y - 10, width: right - left, height: 20, fill: palette.white, 'fill-opacity': 0.08, rx: 2 }));
-            let x = left;
-            priorities.forEach(function(priority) {
-                const count = Number(row[priority]);
-                if (!count) return;
-                const width = totalWidth * count / Number(row.Total);
-                const segment = svgNode('rect', { x: x, y: y - 10, width: Math.max(1, width), height: 20, fill: palette.priorities[priority] });
-                chart.svg.appendChild(segment);
-                bindChartTooltip(segment, mount, `${row.Threshold} or longer · ${shortPriority(priority)}: ${count.toLocaleString()} calls.`);
-                x += width;
-            });
-            addText(chart.svg, Math.min(right, left + totalWidth + 7), y + 5, Number(row.Total).toLocaleString(), {
-                fill: palette.white,
-                'font-size': 11,
-                'font-weight': 800,
-                'text-anchor': left + totalWidth + 48 > right ? 'end' : 'start'
-            });
+        context.font = `700 ${compact ? 9 : 11}px "JetBrains Mono", monospace`;
+        context.textBaseline = 'middle';
+        priorities.forEach(function(priority, priorityIndex) {
+            const centreY = top + laneHeight * (priorityIndex + 0.5);
+            context.strokeStyle = palette.grid;
+            context.globalAlpha = 0.18;
+            context.beginPath();
+            context.moveTo(left, centreY);
+            context.lineTo(right, centreY);
+            context.stroke();
+            context.globalAlpha = 1;
+            context.fillStyle = palette.priorities[priority];
+            context.textAlign = 'right';
+            context.fillText(shortPriority(priority), left - 8, centreY);
         });
+
+        for (let hour = 1; hour <= 8; hour += 1) {
+            const x = xScale(hour * 3600);
+            context.strokeStyle = palette.white;
+            context.lineWidth = hour === 1 || hour === 8 ? 1.25 : 1;
+            context.globalAlpha = hour === 1 || hour === 8 ? 0.52 : 0.3;
+            context.beginPath();
+            context.moveTo(x, top - 10);
+            context.lineTo(x, bottom + 8);
+            context.stroke();
+            context.globalAlpha = 1;
+            context.lineWidth = 1;
+            if (compact && hour === 7) continue;
+            context.fillStyle = palette.white;
+            context.textAlign = hour === 1 ? 'left' : hour === 8 ? 'right' : 'center';
+            context.fillText(hour === 8 ? '8+ hr' : `${hour} hr`, x, height - 22);
+        }
+
+        context.fillStyle = palette.white;
+        context.textBaseline = 'middle';
+        for (let hour = 1; hour <= 8; hour += 1) {
+            const total = hourlyTotals.get(hour) || 0;
+            const x = hour === 8
+                ? right
+                : (xScale(hour * 3600) + xScale((hour + 1) * 3600)) / 2;
+            context.textAlign = hour === 8 ? 'right' : 'center';
+            context.font = `700 ${compact ? 8 : 10}px "JetBrains Mono", monospace`;
+            context.fillText(`${total.toLocaleString()}${compact ? '' : ' calls'}`, x, 17);
+        }
+        context.font = `700 ${compact ? 9 : 11}px "JetBrains Mono", monospace`;
+
+        rows.forEach(function(row) {
+            const priority = row['Final Priority'];
+            const seconds = Number(row['Response Time (sec)']);
+            const count = Number(row.Count);
+            const priorityIndex = priorities.indexOf(priority);
+            if (priorityIndex < 0 || seconds < minimumSeconds || !count) return;
+            const baseX = xScale(seconds);
+            const centreY = top + laneHeight * (priorityIndex + 0.5);
+            for (let rank = 0; rank < count; rank += 1) {
+                const bucket = `${priority}|${Math.round(baseX / 3)}`;
+                const slot = occupancy.get(bucket) || 0;
+                occupancy.set(bucket, slot + 1);
+                const verticalRank = slot % 19;
+                const layer = Math.floor(slot / 19);
+                const offset = verticalRank ? Math.ceil(verticalRank / 2) * (verticalRank % 2 ? 3.2 : -3.2) : 0;
+                const x = Math.max(left, Math.min(right, baseX + (layer ? (layer % 2 ? 1 : -1) * Math.ceil(layer / 2) * 1.4 : 0)));
+                const y = centreY + offset;
+                const point = { x: x, y: y, seconds: seconds, priority: priority };
+                const indexKey = `${Math.floor(x / 12)}|${Math.floor(y / 12)}`;
+                if (!pointIndex.has(indexKey)) pointIndex.set(indexKey, []);
+                pointIndex.get(indexKey).push(point);
+                context.fillStyle = palette.priorities[priority];
+                context.globalAlpha = 0.62;
+                context.beginPath();
+                context.arc(x, y, compact ? 1.45 : 1.7, 0, Math.PI * 2);
+                context.fill();
+            }
+        });
+        context.globalAlpha = 1;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'SA_ems-data-chart__tooltip';
+        tooltip.setAttribute('role', 'tooltip');
+        mount.appendChild(tooltip);
+
+        function hideTooltip() {
+            tooltip.classList.remove('SA_ems-data-chart__tooltip--visible');
+        }
+
+        canvas.addEventListener('pointermove', function(event) {
+            const bounds = canvas.getBoundingClientRect();
+            const x = event.clientX - bounds.left;
+            const y = event.clientY - bounds.top;
+            let nearest = null;
+            let nearestDistance = 64;
+            const indexX = Math.floor(x / 12);
+            const indexY = Math.floor(y / 12);
+            for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+                for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+                    (pointIndex.get(`${indexX + offsetX}|${indexY + offsetY}`) || []).forEach(function(point) {
+                        const distance = Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2);
+                        if (distance < nearestDistance) {
+                            nearest = point;
+                            nearestDistance = distance;
+                        }
+                    });
+                }
+            }
+            if (!nearest) {
+                hideTooltip();
+                return;
+            }
+            tooltip.textContent = `${shortPriority(nearest.priority)} call · ${responseLabel(nearest.seconds)} response`;
+            tooltip.classList.add('SA_ems-data-chart__tooltip--visible');
+            const tooltipWidth = tooltip.offsetWidth;
+            const preferredLeft = x > bounds.width / 2 ? x - tooltipWidth - 12 : x + 12;
+            tooltip.style.left = `${Math.max(8, Math.min(bounds.width - tooltipWidth - 8, preferredLeft))}px`;
+            tooltip.style.top = `${Math.max(18, y)}px`;
+        });
+        canvas.addEventListener('pointerleave', hideTooltip);
     }
 
     function renderFallWaits(figure, rows) {

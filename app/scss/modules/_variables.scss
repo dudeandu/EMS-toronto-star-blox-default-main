@@ -53,8 +53,6 @@ $headlineImageFade: rgba(0, 0, 0, 0.68);
 $headlineImageEdgeFade: rgba(0, 0, 0, 0.92);
 $beesMinorTimeLine: rgba(255, 255, 255, 0.1);
 $beesHourTimeLine: rgba(255, 255, 255, 0.52);
-$timelineDispatcher: #9fd3ff;
-$timelineCaller: #c7f1b2;
 $overlayBackground: rgba(0, 0, 0, 0.7);
 $scrollTextBackground: #0000008f;
 $twitterColour: #55acee;
@@ -68,6 +66,8 @@ $categoryBlue: #76aeb8;
 $categoryFallback: #76aeb8;
 $categoryOrange: #e68a45;
 $openingPainRed: #ff2929;
+$timelineDispatcher: $categoryRed;
+$timelineCaller: $white;
 
 // Font stacks
 $captionfont: 'Inter', sans-serif;
