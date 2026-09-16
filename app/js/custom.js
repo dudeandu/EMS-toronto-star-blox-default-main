@@ -244,6 +244,19 @@ function pauseTimelineAudio(audioId) {
     if (audio) audio.pause();
 }
 
+function playTimelineGreeting(audioId) {
+    const audio = document.getElementById(audioId);
+    if (!audio) return;
+
+    document.querySelectorAll('.SA_opening-timeline audio').forEach(function(otherAudio) {
+        if (otherAudio !== audio) otherAudio.pause();
+    });
+    delete audio.dataset.segmentEnd;
+    audio.currentTime = 0;
+    const playAttempt = audio.play();
+    if (playAttempt && typeof playAttempt.catch === 'function') playAttempt.catch(function() {});
+}
+
 function stopOpeningTimelineAudio() {
     document.querySelectorAll('.SA_opening-timeline audio').forEach(function(audio) {
         audio.pause();
@@ -527,6 +540,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.SA_opening-timeline audio').forEach(function(audio) {
                 audio.muted = !soundIsOn;
             });
+
+            if (soundIsOn && button.dataset.audioId) {
+                playTimelineGreeting(button.dataset.audioId);
+            } else if (!soundIsOn) {
+                stopOpeningTimelineAudio();
+            }
 
             document.querySelectorAll('[data-timeline-sound]').forEach(function(soundButton) {
                 const selected = soundButton === button;
@@ -1014,7 +1033,9 @@ function initializeEmsBeeswarm() {
         const titleHeight = wrappedTextLines(step.dataset.title, textWidth, 'SA_bees-annotation__title').length * 18;
         const copyHeight = wrappedTextLines(step.dataset.copy, textWidth, 'SA_bees-annotation__copy').length * 16;
         const boxHeight = Math.max(205, 81 + titleHeight + copyHeight);
-        const boxY = Math.max(105, Math.min(height - boxHeight - 24, point.y - boxHeight / 2));
+        const boxY = mobile
+            ? height - boxHeight - 24
+            : Math.max(105, Math.min(height - boxHeight - 24, point.y - boxHeight / 2));
         const targetX = point.x;
         const targetY = point.y;
         const edgeX = boxX < targetX ? boxX + boxWidth : boxX;
@@ -1695,9 +1716,9 @@ function initializeEmsDataCharts() {
         const laneHeight = (bottom - top) / priorities.length;
         const minimumSeconds = 3600;
         const maximumSeconds = 8 * 3600;
-        const pointIndex = new Map();
         const occupancy = new Map();
         const hourlyTotals = new Map();
+        const hourlyPriorityTotals = new Map();
 
         rows.forEach(function(row) {
             const priority = row['Final Priority'];
@@ -1706,17 +1727,12 @@ function initializeEmsDataCharts() {
             if (!priorities.includes(priority) || seconds < minimumSeconds || !count) return;
             const hour = Math.min(8, Math.floor(seconds / 3600));
             hourlyTotals.set(hour, (hourlyTotals.get(hour) || 0) + count);
+            const groupKey = `${hour}|${priority}`;
+            hourlyPriorityTotals.set(groupKey, (hourlyPriorityTotals.get(groupKey) || 0) + count);
         });
 
         function xScale(seconds) {
             return left + (right - left) * Math.max(0, Math.min(1, (seconds - minimumSeconds) / (maximumSeconds - minimumSeconds)));
-        }
-
-        function responseLabel(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const remainder = seconds % 60;
-            return `${hours} hr ${minutes} min ${remainder} sec`;
         }
 
         legend.replaceChildren(...priorities.map(function(priority) {
@@ -1790,10 +1806,6 @@ function initializeEmsDataCharts() {
                 const offset = verticalRank ? Math.ceil(verticalRank / 2) * (verticalRank % 2 ? 3.2 : -3.2) : 0;
                 const x = Math.max(left, Math.min(right, baseX + (layer ? (layer % 2 ? 1 : -1) * Math.ceil(layer / 2) * 1.4 : 0)));
                 const y = centreY + offset;
-                const point = { x: x, y: y, seconds: seconds, priority: priority };
-                const indexKey = `${Math.floor(x / 12)}|${Math.floor(y / 12)}`;
-                if (!pointIndex.has(indexKey)) pointIndex.set(indexKey, []);
-                pointIndex.get(indexKey).push(point);
                 context.fillStyle = palette.priorities[priority];
                 context.globalAlpha = 0.62;
                 context.beginPath();
@@ -1803,6 +1815,9 @@ function initializeEmsDataCharts() {
         });
         context.globalAlpha = 1;
 
+        const hoverBand = document.createElement('div');
+        hoverBand.className = 'SA_ems-data-chart__hour-band';
+        mount.appendChild(hoverBand);
         const tooltip = document.createElement('div');
         tooltip.className = 'SA_ems-data-chart__tooltip';
         tooltip.setAttribute('role', 'tooltip');
@@ -1810,32 +1825,41 @@ function initializeEmsDataCharts() {
 
         function hideTooltip() {
             tooltip.classList.remove('SA_ems-data-chart__tooltip--visible');
+            hoverBand.classList.remove('SA_ems-data-chart__hour-band--visible');
         }
 
         canvas.addEventListener('pointermove', function(event) {
             const bounds = canvas.getBoundingClientRect();
             const x = event.clientX - bounds.left;
             const y = event.clientY - bounds.top;
-            let nearest = null;
-            let nearestDistance = 64;
-            const indexX = Math.floor(x / 12);
-            const indexY = Math.floor(y / 12);
-            for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
-                for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
-                    (pointIndex.get(`${indexX + offsetX}|${indexY + offsetY}`) || []).forEach(function(point) {
-                        const distance = Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2);
-                        if (distance < nearestDistance) {
-                            nearest = point;
-                            nearestDistance = distance;
-                        }
-                    });
-                }
-            }
-            if (!nearest) {
+            if (x < left || x > right || y < top - 10 || y > bottom + 8) {
                 hideTooltip();
                 return;
             }
-            tooltip.textContent = `${shortPriority(nearest.priority)} call · ${responseLabel(nearest.seconds)} response`;
+            const bandWidth = (right - left) / 7;
+            const hour = x >= right - 10
+                ? 8
+                : Math.max(1, Math.min(7, Math.floor((x - left) / bandWidth) + 1));
+            const bandLeft = hour === 8 ? right - 10 : left + (hour - 1) * bandWidth;
+            const displayedBandWidth = hour === 8 ? 10 : bandWidth;
+            hoverBand.style.left = `${bandLeft}px`;
+            hoverBand.style.top = `${top - 10}px`;
+            hoverBand.style.width = `${displayedBandWidth}px`;
+            hoverBand.style.height = `${bottom - top + 18}px`;
+            hoverBand.classList.add('SA_ems-data-chart__hour-band--visible');
+
+            tooltip.replaceChildren();
+            const heading = document.createElement('strong');
+            heading.className = 'SA_ems-data-chart__tooltip-line';
+            heading.textContent = hour === 8 ? '8+ hours' : `${hour}–${hour + 1} hours`;
+            tooltip.appendChild(heading);
+            priorities.forEach(function(priority) {
+                const line = document.createElement('span');
+                line.className = 'SA_ems-data-chart__tooltip-line';
+                line.style.color = palette.priorities[priority];
+                line.textContent = `${shortPriority(priority)}: ${(hourlyPriorityTotals.get(`${hour}|${priority}`) || 0).toLocaleString()} calls`;
+                tooltip.appendChild(line);
+            });
             tooltip.classList.add('SA_ems-data-chart__tooltip--visible');
             const tooltipWidth = tooltip.offsetWidth;
             const preferredLeft = x > bounds.width / 2 ? x - tooltipWidth - 12 : x + 12;
@@ -1848,27 +1872,28 @@ function initializeEmsDataCharts() {
     function renderFallWaits(figure, rows) {
         const mount = figure.querySelector('[data-chart-mount]');
         const palette = chartPalette(figure);
-        const chart = createSvg(mount, 220);
+        const chart = createSvg(mount, 260);
         const left = 76;
-        const right = chart.width - 22;
-        const top = 62;
-        const rowGap = 74;
+        const right = chart.width - 70;
+        const top = 55;
+        const rowGap = 76;
         const maximum = Math.max.apply(null, rows.map(function(row) { return Number(row.Count); }));
-        const colours = [palette.priorities['3-ORANGE'], palette.priorities['1-RED (COMBINED)']];
+        const colours = [palette.priorities['4-YELLOW'], palette.priorities['3-ORANGE'], palette.priorities['1-RED (COMBINED)']];
 
         rows.forEach(function(row, index) {
             const count = Number(row.Count);
             const y = top + index * rowGap;
             const width = (right - left) * count / maximum;
-            addText(chart.svg, left - 10, y + 6, `${row.Threshold}+`, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': 'end' });
+            const thresholdLabel = row.Threshold.replace(/^(\d+)\s+hours?$/, '$1+ hours');
+            addText(chart.svg, left - 10, y + 6, thresholdLabel, { fill: palette.white, 'font-size': 12, 'font-weight': 800, 'text-anchor': 'end' });
             chart.svg.appendChild(svgNode('rect', { x: left, y: y - 13, width: right - left, height: 26, fill: palette.white, 'fill-opacity': 0.08, rx: 2 }));
             const bar = svgNode('rect', { x: left, y: y - 13, width: Math.max(2, width), height: 26, fill: colours[index], rx: 2 });
             chart.svg.appendChild(bar);
-            addText(chart.svg, Math.min(right, left + width + 8), y + 6, count.toLocaleString(), {
+            addText(chart.svg, left + width + 8, y + 6, count.toLocaleString(), {
                 fill: palette.white,
                 'font-size': 13,
                 'font-weight': 800,
-                'text-anchor': left + width + 48 > right ? 'end' : 'start'
+                'text-anchor': 'start'
             });
             bindChartTooltip(bar, mount, `${count.toLocaleString()} calls involving falls had an ambulance response time of ${row.Threshold} or longer.`);
         });

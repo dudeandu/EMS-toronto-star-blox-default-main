@@ -176,7 +176,7 @@
         h3 {
             margin: 0.35rem 0 0.65rem;
             font-family: $sectionHeadingFont !important;
-            font-size: clamp(1.3rem, 2.8vw, 1.85rem) !important;
+            font-size: clamp(0.975rem, 2.1vw, 1.3875rem) !important;
             font-weight: $sectionHeadingWeight !important;
             line-height: 1.08 !important;
         }
@@ -203,6 +203,7 @@
         font-weight: 800 !important;
         letter-spacing: 0.12em;
         text-transform: uppercase;
+        display: none;
     }
 
     &__graphic {
@@ -272,6 +273,20 @@
         }
     }
 
+    &__hour-band {
+        position: absolute;
+        z-index: 2;
+        box-sizing: border-box;
+        border-right: 1px solid $white;
+        border-left: 1px solid $white;
+        background: rgba($white, 0.08);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+
+        &--visible { opacity: 1; }
+    }
+
     &__legend {
         display: flex;
         flex-wrap: wrap;
@@ -325,7 +340,7 @@
 
             h3 {
                 margin-top: 0.25rem;
-                font-size: clamp(1.1rem, 2vw, 1.4rem) !important;
+                font-size: clamp(0.825rem, 1.5vw, 1.05rem) !important;
                 line-height: 1.15 !important;
             }
 
@@ -337,6 +352,7 @@
 
         .SA_ems-data-chart__eyebrow {
             font-size: 0.62rem !important;
+            // display:none;
         }
 
         .SA_ems-data-chart__note,
@@ -365,6 +381,25 @@
 
 .SA_text-wrap > .SA_h2 {
     clear: both;
+
+    &::before {
+        content: '';
+        display: block;
+        width: min(100%, 34rem);
+        height: 2rem;
+        margin: 10rem auto 7rem;
+        background: $white;
+        -webkit-mask: url('../images/akg-pulse.svg') center / contain no-repeat;
+        mask: url('../images/akg-pulse.svg') center / contain no-repeat;
+    }
+}
+
+@media (max-width: 600px) {
+    .SA_text-wrap > .SA_h2::before {
+        height: 3rem;
+        margin-top: 3.75rem;
+        margin-bottom: 1.75rem;
+    }
 }
 
 @media (max-width: 767px) {
@@ -427,6 +462,7 @@
         font-weight: 700 !important;
         letter-spacing: 0.12em !important;
         text-transform: uppercase;
+        display: none;
     }
 
     &__scrolly {
@@ -948,7 +984,7 @@
 
         button {
             min-width: 12rem;
-            padding: 0.9rem 1.2rem;
+            padding: 0.7rem 1.2rem;
             border: 1px solid $timelineLine;
             border-radius: 3px;
             background: $transparent;
@@ -968,6 +1004,10 @@
                 outline: 2px solid $white;
                 outline-offset: 3px;
             }
+        }
+
+        &--inline {
+            margin-top: 1rem;
         }
     }
 
@@ -1370,6 +1410,14 @@ body.SA_call-reader-open { overflow: hidden; }
 }
 
 @media (max-width: 600px) {
+    .SA_opening-timeline__sound-actions {
+        justify-content: flex-end;
+
+        button {
+            margin-right: auto;
+        }
+    }
+
     .SA_opening-timeline__custom-player {
         grid-template-columns: 2.4rem minmax(4rem, 1fr) auto;
     }
@@ -1393,7 +1441,7 @@ body.SA_call-reader-open { overflow: hidden; }
     }
 
     .SA_opening-timeline__intro-slide .SA_opening-timeline__card,
-    .SA_opening-timeline__scrolly > .SA_scrollytelling-slide:nth-last-child(-n + 2) .SA_opening-timeline__card {
+    .SA_opening-timeline__scrolly > .SA_scrollytelling-slide:nth-last-child(-n + 3) .SA_opening-timeline__card {
         width: min(90vw, 720px);
         max-width: 720px;
         margin-right: auto;
@@ -1416,6 +1464,10 @@ body.SA_call-reader-open { overflow: hidden; }
         max-width: 3.7rem;
         text-align: right;
         white-space: nowrap;
+    }
+
+    .SA_opening-timeline__event {
+        display: none;
     }
 
     .SA_opening-timeline__marker-time {

@@ -15,7 +15,7 @@
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.112" style="--tick-position: 11.2%"><span class="SA_opening-timeline__marker-time">6:30 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.201" style="--tick-position: 20.1%"><span class="SA_opening-timeline__marker-time">6:45 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.29" style="--tick-position: 29%"><span class="SA_opening-timeline__marker-time">7:00 p.m.</span></span>
-                    <span class="SA_opening-timeline__tick SA_opening-timeline__tick--call" data-timeline-point="0.337" style="--tick-position: 33.7%"><span class="SA_opening-timeline__event">Second call</span><span class="SA_opening-timeline__marker-time">7:08 p.m.</span></span>
+                    <span class="SA_opening-timeline__tick SA_opening-timeline__tick--call" data-timeline-point="0.337" style="--tick-position: 33.7%"><span class="SA_opening-timeline__event">Second call</span><span class="SA_opening-timeline__marker-time SA_opening-timeline__event">7:08 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.379" style="--tick-position: 37.9%"><span class="SA_opening-timeline__marker-time">7:15 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.467" style="--tick-position: 46.7%"><span class="SA_opening-timeline__marker-time">7:30 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.556" style="--tick-position: 55.6%"><span class="SA_opening-timeline__marker-time">7:45 p.m.</span></span>
@@ -23,7 +23,7 @@
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.734" style="--tick-position: 73.4%"><span class="SA_opening-timeline__marker-time">8:15 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.822" style="--tick-position: 82.2%"><span class="SA_opening-timeline__marker-time">8:30 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="0.911" style="--tick-position: 91.1%"><span class="SA_opening-timeline__marker-time">8:45 p.m.</span></span>
-                    <span class="SA_opening-timeline__tick SA_opening-timeline__tick--call" data-timeline-point="0.953" style="--tick-position: 95.3%"><span class="SA_opening-timeline__event">Third call</span><span class="SA_opening-timeline__marker-time">8:52 p.m.</span></span>
+                    <span class="SA_opening-timeline__tick SA_opening-timeline__tick--call" data-timeline-point="0.953" style="--tick-position: 95.3%"><span class="SA_opening-timeline__event">Third call</span><span class="SA_opening-timeline__marker-time SA_opening-timeline__event">8:52 p.m.</span></span>
                     <span class="SA_opening-timeline__tick" data-timeline-point="1" style="--tick-position: 100%"><span class="SA_opening-timeline__marker-time">9:00 p.m.</span></span>
                 </div>
             </div>
@@ -42,13 +42,20 @@
         <div class="SA_scrollytelling-slide SA_opening-timeline__intro-slide"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--intro"><p>The 62-year old was on the floor of his west-end Toronto home with a <span class="SA_opening-timeline__pain-emphasis">broken femur</span>. Time blurred, but Duncan knew it had been a while since he dismounted terribly wrong from his bike; since his neighbour all but carried him to the door and since, in his initial surge of adrenaline, he scooted upstairs.</p></div></div></div>
         <div class="SA_scrollytelling-slide SA_opening-timeline__intro-slide"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--intro"><p>Now that adrenaline had worn off and <span class="SA_opening-timeline__pain-emphasis">moving again seemed impossible</span> – certainly not downstairs, ruling out a car ride to the nearest hospital.</p><p>“If I could have gotten off the floor, I would have,” Duncan said.</p></div></div></div>
         <div class="SA_scrollytelling-slide SA_opening-timeline__intro-slide"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--intro"><p>The only thing he could do that September 2024 evening was wait for paramedics to arrive.</p></div></div></div>
-        <div class="SA_scrollytelling-slide" data-opening-timeline-start data-opening-timeline-progress="0"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--opening-time">
+        <div class="SA_scrollytelling-slide" data-opening-timeline-start data-opening-timeline-progress="0" data-on-enter="playTimelineGreeting, timeline-greeting" data-on-exit="pauseTimelineAudio, timeline-greeting"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--opening-time">
             <p class="SA_opening-timeline__time">6:11 p.m.</p>
             <p class="SA_opening-timeline__time-description">Graham Duncan’s wife, Laurel, called 9-1-1.</p>
+            <div class="SA_opening-timeline__sound-actions SA_opening-timeline__sound-actions--inline" role="group" aria-label="Choose story audio">
+                <button type="button" data-timeline-sound="on" data-audio-id="timeline-greeting">Play story with audio</button>
+                <button type="button" data-timeline-sound="off">Continue muted</button>
+            </div>
+            <audio id="timeline-greeting" class="SA_opening-timeline__audio" preload="auto" hidden><source src="images/audio/greeting.wav" type="audio/wav" /></audio>
         </div></div></div>
-        <div class="SA_scrollytelling-slide" data-on-exit="pauseTimelineAudio, timeline-initial-call"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__audio-card">
+        <div class="SA_scrollytelling-slide"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__audio-card">
             <p class="SA_opening-timeline__call-blurb SA_opening-timeline__speaker--dispatcher">Dispatcher: Toronto ambulance, where do you need us?</p>
             <p class="SA_opening-timeline__call-blurb">Laurel gave their west-end address, recounted how her husband got hurt, and notified the dispatchers that her husband was also a cancer patient. He wasn’t bleeding or throwing up, she told them – but he was in pain severe enough that he couldn’t stand up.</p>
+        </div></div></div>
+        <div class="SA_scrollytelling-slide" data-on-exit="pauseTimelineAudio, timeline-initial-call"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__audio-card">
             <p class="SA_opening-timeline__call-blurb SA_opening-timeline__speaker--dispatcher">Dispatcher: An ambulance will be sent to you as one becomes available. Our goal is to arrive within the hour, but it may take longer. Watch him very closely.</p>
             <button class="SA_opening-timeline__audio-trigger" type="button" data-audio-id="timeline-initial-call" data-audio-start="0" data-audio-end="6.544688">Play audio</button>
             <audio id="timeline-initial-call" class="SA_opening-timeline__audio" preload="metadata" hidden><source src="images/audio/EMS - Blurb 1.wav" type="audio/wav" /></audio>
@@ -94,7 +101,7 @@
             <audio id="timeline-blurb-4" class="SA_opening-timeline__audio" preload="metadata" hidden><source src="images/audio/EMS - Blurb 4.wav" type="audio/wav" /></audio>
             <p class="SA_opening-timeline__audio-note" hidden>Audio condensed from the original version</p>
         </div></div></div>
-        <div class="SA_scrollytelling-slide" data-opening-fadeout><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--context SA_opening-timeline__card--final"><p>This is a problem that has besieged Toronto’s paramedic service for years, and played out in plain sight of decision-makers. <span class="SA_opening-timeline__pain-emphasis">Overstrain on Toronto emergency medical system has left patients waiting</span>, sometimes for hours, in painful, uncomfortable and even dangerous situations.</p></div></div></div>
+        <div class="SA_scrollytelling-slide" data-opening-fadeout><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--context"><p>This is a problem that has besieged Toronto’s paramedic service for years, and played out in plain sight of decision-makers. <span class="SA_opening-timeline__pain-emphasis">Overstrain on Toronto emergency medical system has left patients waiting</span>, sometimes for hours, in painful, uncomfortable and even dangerous situations.</p></div></div></div>
         <div class="SA_scrollytelling-slide"><div class="SA_scroll-text-wrapper"><div class="SA_scroll-text SA_opening-timeline__card SA_opening-timeline__card--context ">
             <p>Officials have acknowledged that something needs to change. In June 2025, days after bystanders waited on hold with 9-1-1 for nearly seven minutes after a 15-year-old boy was shot and lay waiting for help, Toronto Mayor Olivia Chow told reporters there would be a $52-million investment over the coming years to boost staffing and hasten responses:</p>
             <p>“Torontonians deserve a paramedic service that is quick to respond in an emergency because people cannot wait.”</p>

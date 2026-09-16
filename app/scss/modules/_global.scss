@@ -163,7 +163,18 @@
 
      .SA_h3,
      #SA_main-body h3 {
-         font-size: 1.65rem;
+         font-size: 1.2375rem;
+     }
+
+     .SA_h3,
+     #SA_main-body h3,
+     .SA_ems-data-chart h3,
+     .SA_ems-beeswarm__intro h3 {
+         display: table;
+         width: fit-content;
+         padding: 0.22em 0.4em;
+         background: $white;
+         color: $bodyBackground !important;
      }
 
      .SA_h4,
