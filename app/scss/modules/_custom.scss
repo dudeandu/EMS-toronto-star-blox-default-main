@@ -27,6 +27,156 @@
     padding-top: clamp(4rem, 10vh, 8rem);
 }
 
+.SA_theme-toggle-wrap {
+    position: sticky;
+    top: 1rem;
+    z-index: 20;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    height: 0;
+    padding-right: clamp(0.75rem, 2vw, 1.5rem);
+    pointer-events: none;
+}
+
+.SA_theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    border: 1px solid $white;
+    border-radius: 999px;
+    background: $bodyBackground;
+    color: $white;
+    font-family: $sansFont;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    pointer-events: auto;
+
+    &:focus-visible {
+        outline: 2px solid $categoryRed;
+        outline-offset: 3px;
+    }
+}
+
+.SA_body-section--light,
+.SA_after-scrollytelling-fix.SA_body-section--light {
+    background: $lightModeBackground;
+    color: $lightModeText;
+
+    .SA_theme-toggle {
+        border-color: $black;
+        background: $lightModeBackground;
+        color: $lightModeText;
+    }
+
+    .SA_text-grid,
+    .SA_text-wrap,
+    .SA_ems-data-chart,
+    .SA_ems-beeswarm {
+        background: $lightModeBackground;
+        color: $lightModeText;
+    }
+
+    .SA_text-wrap > .SA_h2,
+    .SA_text-wrap > .SA_h4,
+    .SA_ems-data-chart figcaption,
+    .SA_ems-beeswarm__intro {
+        color: $lightModeText !important;
+    }
+
+    .SA_text-wrap > .SA_h2::before {
+        background: $black;
+    }
+
+    .SA_h3,
+    .SA_ems-data-chart h3,
+    .SA_ems-beeswarm__intro h3 {
+        padding-left: 0;
+        background: $lightModeBackground;
+        color: $lightModeText !important;
+    }
+
+    .SA_caption__description,
+    .SA_ems-data-chart__source,
+    .SA_ems-data-chart__note,
+    .SA_ems-data-chart__legend,
+    .SA_ems-beeswarm__source,
+    .SA_ems-beeswarm__legend,
+    .SA_ems-beeswarm__loading {
+        color: $lightModeMutedText !important;
+    }
+
+    .SA_caption__credit,
+    .SA_ems-data-chart__eyebrow,
+    .SA_ems-beeswarm__eyebrow {
+        color: $lightModeMutedText !important;
+    }
+
+    .SA_ems-data-chart {
+        --chart-white: #{$lightModeText};
+        --chart-background: #{$lightModeBackground};
+        --chart-muted: #{$lightModeMutedText};
+        --chart-grid: #{$lightModeBorder};
+    }
+
+    .SA_ems-beeswarm {
+        --bees-background: #{$lightModeBackground};
+        --bees-text: #{$lightModeText};
+        --bees-minor-time-line: rgba(0, 0, 0, 0.15);
+        --bees-hour-time-line: rgba(0, 0, 0, 0.62);
+    }
+
+    .SA_ems-beeswarm__graphic,
+    .SA_ems-beeswarm__legend {
+        background: $lightModeBackground;
+    }
+
+    .SA_bees-annotation__box {
+        fill: $lightModeCardBackground;
+        stroke: $lightModeBorder;
+    }
+
+    .SA_bees-annotation__target {
+        fill: $lightModeBackground;
+    }
+
+    .SA_bees-annotation__time,
+    .SA_bees-annotation__title,
+    .SA_bees-annotation__copy {
+        fill: $lightModeText;
+    }
+
+    .SA_ems-data-chart__tooltip {
+        background: $lightModeCardBackground;
+        color: $lightModeText;
+        box-shadow: 0 0.4rem 1.25rem $shadowColour;
+    }
+
+    * {
+        border-color: $black !important;
+    }
+}
+
+#SA_main-body .SA_body-section--light .SA_text-wrap p,
+#SA_main-body .SA_body-section--light .SA_ems-data-chart p,
+#SA_main-body .SA_body-section--light .SA_ems-beeswarm p {
+    color: $lightModeText;
+}
+
+#SA_main-body .SA_body-section--light .SA_ems-data-chart__graphic svg text {
+    fill: $lightModeText !important;
+}
+
+#SA_main-body .SA_body-section--light h3,
+#SA_main-body .SA_body-section--light .SA_ems-beeswarm__intro h3,
+#SA_main-body .SA_body-section--light .SA_ems-data-chart h3,
+#SA_main-body .SA_body-section--light .SA_h3 {
+    padding-left: 0 !important;
+}
+
 .SA_body-column-photo {
     width: 100%;
     margin: clamp(2rem, 5vw, 3.5rem) 0;
@@ -422,6 +572,7 @@
 
 .SA_ems-beeswarm {
     --bees-background: #{$black};
+    --bees-text: #{$white};
     --bees-purple: #{$categoryPurple};
     --bees-red: #{$categoryRed};
     --bees-red-acp: #{$categoryRed};

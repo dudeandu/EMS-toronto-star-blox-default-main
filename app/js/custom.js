@@ -661,11 +661,14 @@ function initializeEmsBeeswarmLegacy() {
         context.lineWidth = 1;
         priorityOrder.forEach(function(priority, index) {
             const centre = left + laneWidth * (index + 0.5);
-            context.strokeStyle = 'rgba(255,255,255,0.06)';
+            context.strokeStyle = currentChartStyles.getPropertyValue('--bees-minor-time-line').trim()
+                || 'rgba(255,255,255,0.1)';
+            context.globalAlpha = 0.45;
             context.beginPath();
             context.moveTo(centre, top);
             context.lineTo(centre, bottom);
             context.stroke();
+            context.globalAlpha = 1;
             context.fillStyle = colours[priority];
             context.textAlign = 'center';
             context.fillText(priority.replace(/^\d-/, '').replace(' (', '\n('), centre, 20);
@@ -678,7 +681,7 @@ function initializeEmsBeeswarmLegacy() {
             context.moveTo(left, y);
             context.lineTo(right, y);
             context.stroke();
-            context.fillStyle = 'rgba(255,255,255,0.72)';
+            context.fillStyle = currentChartStyles.getPropertyValue('--bees-text').trim() || '#fff';
             context.textAlign = 'right';
             context.fillText(formatDuration(seconds), left - 7, y);
         }
@@ -1180,7 +1183,8 @@ function initializeEmsBeeswarm() {
             canvas.width = width;
             canvas.height = height;
         }
-        context.fillStyle = chartStyles.getPropertyValue('--bees-background').trim() || '#000';
+        const currentChartStyles = getComputedStyle(scrolly.closest('.SA_ems-beeswarm'));
+        context.fillStyle = currentChartStyles.getPropertyValue('--bees-background').trim() || '#000';
         context.fillRect(0, 0, width, height);
         context.font = '700 9px "JetBrains Mono", monospace';
         context.textBaseline = 'middle';
@@ -1215,7 +1219,7 @@ function initializeEmsBeeswarm() {
             const y = yScale(seconds);
             if (y < top || y > bottom) return;
             const isHour = seconds % 3600 === 0;
-            context.strokeStyle = chartStyles.getPropertyValue(isHour ? '--bees-hour-time-line' : '--bees-minor-time-line').trim()
+            context.strokeStyle = currentChartStyles.getPropertyValue(isHour ? '--bees-hour-time-line' : '--bees-minor-time-line').trim()
                 || (isHour ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.1)');
             context.lineWidth = isHour ? 2 : 1;
             context.beginPath();
@@ -2083,6 +2087,35 @@ function initializeEmsDataCharts() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEmsDataCharts);
+
+document.addEventListener('DOMContentLoaded', function() {
+    const section = document.querySelector('.SA_body-section');
+    const toggle = document.querySelector('.SA_theme-toggle');
+    if (!section || !toggle) return;
+
+    let savedTheme = 'dark';
+    try {
+        savedTheme = window.localStorage.getItem('SA-ems-theme') || 'dark';
+    } catch (error) {}
+
+    function applyTheme(theme) {
+        const lightMode = theme === 'light';
+        section.classList.toggle('SA_body-section--light', lightMode);
+        toggle.setAttribute('aria-pressed', lightMode ? 'false' : 'true');
+        toggle.setAttribute('aria-label', 'Dark mode');
+        toggle.setAttribute('title', 'Dark mode');
+        toggle.textContent = lightMode ? '☀' : '☾';
+        try {
+            window.localStorage.setItem('SA-ems-theme', lightMode ? 'light' : 'dark');
+        } catch (error) {}
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    applyTheme(savedTheme);
+    toggle.addEventListener('click', function() {
+        applyTheme(section.classList.contains('SA_body-section--light') ? 'dark' : 'light');
+    });
+});
 
 // End paywall detection code
 
